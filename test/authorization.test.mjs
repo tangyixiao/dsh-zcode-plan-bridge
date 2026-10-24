@@ -39,6 +39,35 @@ test('unknown permission methods fail closed under every policy', () => {
   }
 })
 
+test('the user-once approval mode is answered by a bare decision', () => {
+  assert.deepEqual(
+    permissionResponse('interaction/requestPermission', 'allow-all', { approvalMode: 'user-once', options: [] }),
+    { decision: 'allow' },
+  )
+  assert.deepEqual(
+    permissionResponse('interaction/requestPermission', 'deny', { approvalMode: 'user-once' }),
+    { decision: 'deny', reason: 'Permission requests are denied by the plugin policy.' },
+  )
+})
+
+test('an unrecognized approval mode fails closed even in full-auto', () => {
+  for (const policy of ['deny', 'allow-all']) {
+    assert.deepEqual(permissionResponse('interaction/requestPermission', policy, { approvalMode: 'forever' }), {
+      decision: 'deny',
+      reason: 'Unknown approvalMode "forever"; denied by the plugin policy.',
+    })
+  }
+})
+
+test('a request without params behaves as before', () => {
+  assert.deepEqual(permissionResponse('interaction/requestPermission', 'allow-all', undefined), {
+    decision: 'allow',
+  })
+  assert.deepEqual(permissionResponse('interaction/requestPermission', 'allow-all', {}), {
+    decision: 'allow',
+  })
+})
+
 test('unrelated methods are not classified as permission requests', () => {
   assert.equal(permissionResponse('interaction/browserList', 'allow-all'), undefined)
 })
