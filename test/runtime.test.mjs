@@ -16,10 +16,12 @@ import { test } from 'node:test'
 
 import {
   collapseCatalog,
+  compareVersions,
   normalizeCatalogEntry,
   pickCatalogEntry,
   readCurrentModel,
   readModelCatalog,
+  selectBestCli,
 } from '../lib/zcode-runtime.js'
 import { deriveKey, decryptValue, readZaiPlanAuth } from '../lib/credentials.js'
 import { flattenConversation, lastUserText, sanitizeLeakedCalls } from '../lib/messages.js'
@@ -55,6 +57,36 @@ test('normalizeCatalogEntry reads the fields the CLI actually sends', () => {
 
 test('normalizeCatalogEntry rejects an entry with no ref', () => {
   assert.equal(normalizeCatalogEntry({ label: 'orphan' }), undefined)
+})
+
+test('compareVersions orders kernels the way releases are numbered', () => {
+  assert.ok(compareVersions('3.16.3', '3.14.4') > 0)
+  assert.ok(compareVersions('3.14.4', '3.16.3') < 0)
+  assert.equal(compareVersions('3.16.3', '3.16.3'), 0)
+  // npm rebuild suffixes and missing parts must not change the ordering.
+  assert.equal(compareVersions('3.16.3-39', '3.16.3'), 0)
+  assert.ok(compareVersions('3.16', '3.16.1') < 0)
+  assert.ok(compareVersions('3.9.0', '3.14.4') < 0)
+  // An unreadable version ranks below anything readable.
+  assert.ok(compareVersions('', '0.0.1') < 0)
+  assert.equal(compareVersions('', ''), 0)
+})
+
+test('selectBestCli prefers the newest kernel and breaks ties by list order', () => {
+  const npmOld = 'D:/npm-global/node_modules/zcode-app-cli/vendor/zcode.cjs'
+  const desktop = 'D:/ZCode/resources/glm/zcode.cjs'
+  const versions = new Map([
+    [npmOld, '3.14.4'],
+    [desktop, '3.16.3'],
+  ])
+  const versionOf = (candidate) => versions.get(candidate) ?? ''
+  assert.equal(selectBestCli([npmOld, desktop], versionOf), desktop)
+  assert.equal(selectBestCli([desktop, npmOld], versionOf), desktop)
+  // Equal versions keep the first candidate (order encodes preference).
+  assert.equal(selectBestCli([npmOld, 'D:/npm-global2/zcode.cjs'], (p) => '3.14.4'), npmOld)
+  // An unreadable version loses to any readable one; among unreadables, the first stays.
+  assert.equal(selectBestCli([desktop, npmOld], () => ''), desktop)
+  assert.equal(selectBestCli([], versionOf), '')
 })
 
 test('normalizeCatalogEntry treats absent image support as unsupported', () => {

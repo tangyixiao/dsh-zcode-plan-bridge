@@ -9,7 +9,19 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
 本仓库：<https://github.com/tangyixiao/dsh-zcode-plan-bridge> ·
 上游原版：<https://github.com/kyle123740/dsh-zcode-cli-proxy>（AGPL-3.0）
 
-> **与上游 0.3.x 的差异（v0.4.x，基于实机逆向重写通道层）**
+## 适配版本（v0.5.x，双内核跟进）
+
+这个桥同时耦合两个内核，两边都要跟：
+
+| 内核 | 实测通过 | 声明范围 |
+|---|---|---|
+| **ZCode CLI**（`zcode-app-cli` / 桌面端 builtin） | **3.16.3**（npm `3.16.3-39`，2026-10-24）；通道方法 73→99 零删除、事件枚举不变、`approvalMode:"user-once"` 已适配 | 无硬性下限，但 **3.14.x 与升级后的桌面端共存会启动即崩**（桌面写出的新 builtin 老内核解不了，#207），建议 ≥ 3.15.3 |
+| **DSH 宿主**（`@deepseek-ai/dsh-llm` 线） | 0.2.1-rc.3（2026-10-23，devDeps 即此版） | `dsh.engines.dsh = >=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1`；cordis `>=4.0.1 <5.0.0`（4.0.5 实测）、schemastery `>=3.18.1 <4.0.0`（3.18.5 实测） |
+
+预发布 semver 很严：`>=0.1.5-rc.1` 对 `0.2.1-rc.3` 求值是 **false**（只有带同一
+`major.minor.patch` 的比较项才接纳预发布），所以 peer 按线 caret 枚举，不写开区间。
+
+> **与上游 0.3.x 的差异（v0.4.x 起基于实机逆向重写通道层；v0.5.x 跟进双内核升级）**
 >
 > 上游假定「DSH 侧注入 Start Plan 账户 + 硬编码模型清单」，实测在 npm 版 CLI
 > （`zcode-app-cli`）上这两条都错：
@@ -42,21 +54,24 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 ## 用法
 
-1. 装一份 ZCode CLI（`npm i -g zcode-app-cli`，或桌面客户端自带的 `zcode.cjs`），并登录有额度的账号。
+1. 装一份 ZCode CLI（`npm i -g zcode-app-cli`，或桌面客户端自带的 `zcode.cjs`），并登录有额度的账号。装了桌面端的注意：**保持 npm 全局包跟着桌面端一起升级**——桌面升级后会在 `~/.zcode/v2` 写入新版 builtin，老 CLI（<3.15.3）解析不了会在服务任何请求前直接退出。探测自动在多份内核里选版本最新的一份。
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
 
-可用模型**不是插件写死的**，而是 CLI 当前账号能服务的那批。本机实测（2026-10-22）：
+可用模型**不是插件写死的**，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：
 
 | provider | model | context | max output | image |
 |---|---|---|---|---|
-| `account:zai-individual-coding-plan` | GLM-5.3 | 1000000 | 128000 | ✓ |
-| `account:zai-individual-coding-plan` | GLM-5.3-Flash | 1000000 | 128000 | ✓ |
+| `zai-api` | GLM-5.3 | 1000000 | 128000 | ✓ |
+| `zai-api` | GLM-5.3-Flash | 1000000 | 128000 | ✓ |
 | `ccc6dfb9-…`（个人 deepseek） | deepseek-v4-flash | 1000000 | 384000 | ✓ |
 
-同一 model id 出现在多个 provider 上时（如上表 GLM-5.3 同时在 `account:` 与 `zai-api` 上），
-插件**优先 `account:` 开头的路由** —— 那条烧计划额度，`zai-api` 那条按 API Key 计费。
-想指定确切路由，就在 `cliModels` 里给条目写 `id: "zai-api/GLM-5.3"`（`providerId/modelId` 形式）。
+3.15+ 的 builtin registry 还带了 `account:zai-highspeed-card` 等 HighSpeed 通道；清单里出现
+`account:` 前缀路由时插件仍然优先它（烧计划额度），`zai-api` 路由按 CLI 自己的计费口径走。
+
+同一 model id 出现在多个 provider 上时，插件**优先 `account:` 开头的路由**（烧计划额度），
+其余按 CLI 上报顺序取第一条；想指定确切路由，就在 `cliModels` 里给条目写
+`id: "zai-api/GLM-5.3"`（`providerId/modelId` 形式）。
 
 - 真流式（text/reasoning delta 直接转发）、工具调用、图片输入（图片以本地文件随消息附上，agent 用 Read 读图）
 - 多轮会话按 DSH 的 sessionId 复用 app-server 会话
@@ -69,8 +84,8 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 - 两种策略都会将会话设为 ZCode 的 `build` 权限模式，确保授权请求经过插件处理；模式设置失败时本轮停止。该策略不构成操作系统沙箱，也不阻止无需额外授权的 agent 操作。
 - 默认 `authorizationPolicy: deny`：插件对 `interaction/requestPermission` 回复 `deny`，不会弹确认框；需要授权的工具调用会失败。
+- 3.15+ 内核的权限请求可能带 `approvalMode:"user-once"`（不允许附带持久化规则）；插件只回裸 `decision`，两种策略下都满足该模式。出现**未识别的 `approvalMode` 或权限类方法名时始终 fail-closed 拒绝**，即使启用了全自动模式；如果 ZCode 将来改变权限协议，相关调用会失败关闭。
 - 只有显式设置 `authorizationPolicy: allow-all` 才会自动批准已知的 `interaction/requestPermission` 请求。该设置允许 agent 以当前用户权限执行 Bash、文件读写和联网操作，不要在不可信任务中启用。
-- 名称包含 `approval` 或 `permission` 的未知 app-server 请求始终拒绝，即使启用了全自动模式；如果 ZCode 将来改变权限协议，相关调用会失败关闭。
 - agent 的输入是 DSH 拍平后的整段对话（包括网页抓取、工具结果等外部内容）。提示注入仍可能诱导全自动模式执行恶意操作；默认拒绝减少了授权面，但不能消除未经过授权请求的副作用。
 - 子进程环境变量按白名单透传（系统基础变量、`ZCODE_*`、`NODE_EXTRA_CA_CERTS`），不继承
   DSH 宿主的全部 env；确有需要可用配置项 `childEnvAllow` 追加变量名。
@@ -96,6 +111,12 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 7. 服务端请求必须应答，否则 `session/create` 挂起：`session/requestRuntimePreferences` 回
    `{nativeSearchEnhancementsEnabled:false, memoryEnabled:false,
    askUserQuestionAutoResolutionEnabled:true, modelContextBudgetStrategy:'preflight-v1'}` 就够。
+8. **CLI 探测按版本择优**（v0.5.x）：`ZCODE_CLI_PATH` → 桌面端默认安装位 → Windows 各盘根
+   `X:\ZCode\resources\glm\zcode.cjs` → macOS/Linux 常见位 → PATH 里的 `zcode-app-cli`，
+   全部存在的候选里选版本最高的一份（npm 布局读 package.json；桌面布局没有清单，
+   用 `~/.zcode/v2/runtime/provider` 下最新 builtin 目录名作版本代理）。平局按此顺序取先者。
+   3.16 新增的服务端请求（如 `interaction/requestOfficialMcpAuthHeaders`、`mcp/ui*`）不认识
+   也必须应答，插件统一回空对象——对应功能降级，但不挂会话。
 
 > HTTP 直连计划端点会被无痕验证拦 —— 只有 agent 二进制自己发的签名请求能过，
 > 所以「反代」的形态是托管 agent 进程而不是自建 HTTP 网关。
@@ -150,7 +171,7 @@ node bin/dsh-zcode-plan-bridge.js image <file> # 发一张图（消耗额度）
 | 字段 | 默认 | 说明 |
 |------|------|------|
 | `enabled` | `true` | 总开关 |
-| `zcodeCliPath` | 自动探测 | `zcode.cjs` 路径；空 = 从 `ZCODE_CLI_PATH`、桌面客户端常见安装位置、`zcode-app-cli` 全局包依次探测 |
+| `zcodeCliPath` | 自动探测（版本择优） | `zcode.cjs` 路径；空 = 在 `ZCODE_CLI_PATH`、桌面客户端安装位（含 Windows 任意盘根 `X:\ZCode`）、`zcode-app-cli` 全局包等候选里**选版本最新**的一份。显式填写则不做择优，直接用这份 |
 | `zcodeCliNode` | `node` | 运行 zcode.cjs 的 node 可执行文件 |
 | `cliModels` | `[]` | **留空 = 跟随 CLI 上报的清单**（推荐）。填了就等于把清单钉死成这份，只用 `cliModelId` 决定 CLI 侧路由 |
 | `authorizationPolicy` | `deny` | `deny` 会拒绝 ZCode 的权限请求且不提供交互确认；只有你明确接受无人值守工具执行时才设为 `allow-all`。未知 permission/approval 方法始终拒绝 |
