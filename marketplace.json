@@ -1,0 +1,7 @@
+{
+  "name": "tangyixiao-zcode-community",
+  "owner": { "name": "tangyixiao" },
+  "plugins": [
+    { "name": "zcode-community-retry", "source": "./community", "version": "0.1.0", "description": "非官方自动重试，包含配套启动器" }
+  ]
+}

@@ -8,6 +8,8 @@
 
 解压独立安装包后，在 ZCode 插件市场添加该目录作为本地市场，安装并启用 `zcode-community-retry@tangyixiao-zcode-community`。该目录同时包含 marketplace.json 和 .zcode-plugin/plugin.json。本仓库源码的插件根目录为 community/。
 
+GitHub 分支中仓库根目录也提供 marketplace.json，指向 community/。在该分支合并前，使用分支的本地克隆或交付安装包；默认分支尚未包含新功能，直接添加默认分支不能安装本版本。
+
 新会话中使用 `/retry-status`，或让 Agent 调用 `retry_status`。工具返回插件实际的 `dataDirectory` 和 `launcher`。`retry_configure` 支持修改 maxRetries、baseDelayMs、maxDelayMs、backoffFactor、jitter、budgetMs、probeTimeoutMs、allowedOrigins 及缓冲上限。配置在下一次 Agent 启动时生效。
 
 ## 启用桌面端
