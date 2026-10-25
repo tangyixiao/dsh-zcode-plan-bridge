@@ -250,3 +250,21 @@ AGPL-3.0。本仓库是 [kyle123740/dsh-zcode-cli-proxy](https://github.com/kyle
 的衍生版：app-server 通道的逆向结论（回合锁、事件流、鉴权回调）源自上游，
 v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 [liu5269/zcode2api](https://github.com/liu5269/zcode2api)，其代码已不再随本仓库分发。
+# 社区自动重试（可选）
+
+从 `0.6.0-community.0` 起，桥接包内附独立的 `zcode-community-retry` 社区插件与 Agent 加载器。它也可单独用于 ZCode；安装、桌面启用与恢复方法见 [community/README.md](community/README.md)。此扩展非官方。
+
+在桥接配置中选择启用：
+
+```yaml
+communityRetry:
+  enabled: true
+  maxRetries: 6
+  baseDelayMs: 5000
+  maxDelayMs: 60000
+  budgetMs: 600000
+```
+
+开关默认关闭。开启后由社区模块统一管理物理请求重试，原生模型重试与 DSH 外层重试均关闭；已有子进程保持原配置，下一次创建子进程才生效。日志出现 `community retry loaded` 表示加载成功，兼容性失败会直接返回错误。默认只管理 ZCode/Z.AI/BigModel 官方推理请求，自定义 HTTPS 模型服务需在 `allowedOrigins` 显式列出 origin。
+
+并发限制、临时网络失败、限流和服务端临时错误可重试；1113、认证失败、长期额度或模型权限错误直接返回。取消会停止等待。有效文本、推理或工具调用已经交付后发生的流中断不重放请求；整个会话与工具不会被重新提交。恢复预算为每个模型请求 10 分钟，调用方更短的超时优先。
