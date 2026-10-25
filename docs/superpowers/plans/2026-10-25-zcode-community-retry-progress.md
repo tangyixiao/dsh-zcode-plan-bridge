@@ -10,4 +10,6 @@ Ruling: Keep standalone code in a separately packable community/ package in the 
 
 Task 1: complete. Transport tests 18/18; real CLI fixtures 4/4 (npm success/exhaustion/1113 and desktop success), 22/22 combined. Observed exactly 3, 7, 1 and 3 physical requests respectively. No account credentials used. Fixed caller cancellation after response return with a reproducing RED→GREEN test.
 
-Task 2: in progress. MCP/config/launcher tests observed missing-module failure before implementation.
+Task 2: complete. MCP/config/launcher/bootstrap-state tests 4/4; ZCode plugins validate returned ok=true and no diagnostics. Desktop currently has running instances, so launcher must refuse rather than restart them.
+
+Task 3: in progress. Bridge tests observed missing-module failure, then passed 3/3 with default-off, enabled loader, invalid config and running-child snapshot checks. Typecheck passed.

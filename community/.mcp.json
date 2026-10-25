@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "community-retry": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${ZCODE_PLUGIN_ROOT}/bin/tools.mjs"]
+    }
+  }
+}

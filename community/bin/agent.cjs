@@ -15,6 +15,8 @@ async function main() {
   if (typeof globalThis.fetch !== 'function' || typeof AbortSignal.any !== 'function') throw new Error('Node.js 22+ with fetch and AbortSignal.any is required')
   const { resolveConfig, VERSION } = await import('../runtime/config.mjs')
   const { createRetryFetch } = await import('../runtime/retry-fetch.mjs')
+  const { dataDirectory, writeRuntime } = await import('../runtime/state.mjs')
+  const dataDir = dataDirectory()
   let raw = {}
   if (process.env.ZCODE_COMMUNITY_RETRY_CONFIG_FILE) {
     raw = JSON.parse(fs.readFileSync(process.env.ZCODE_COMMUNITY_RETRY_CONFIG_FILE, 'utf8'))
@@ -22,12 +24,20 @@ async function main() {
   if (process.env.ZCODE_COMMUNITY_RETRY_CONFIG_JSON) raw = { ...raw, ...JSON.parse(process.env.ZCODE_COMMUNITY_RETRY_CONFIG_JSON) }
   const config = resolveConfig(raw)
   process.env.ZCODE_MODEL_RETRY_MAX_RETRIES = '0'
+  let latest = { version: VERSION, pid: process.pid, owner: process.env.ZCODE_COMMUNITY_RETRY_OWNER || 'standalone', state: 'loaded', at: Date.now() }
+  const persist = () => { try { writeRuntime(dataDir, { ...latest, at: Date.now() }) } catch { process.stderr.write('[community-retry] runtime status write failed\n') } }
   const onStatus = state => {
+    latest = { ...latest, ...state }
+    persist()
     process.stderr.write(`[community-retry] ${JSON.stringify({ version: VERSION, pid: process.pid, ...state })}\n`)
   }
+  persist()
+  setInterval(persist, 20000).unref()
   globalThis.fetch = createRetryFetch(globalThis.fetch.bind(globalThis), config, { onStatus })
   process.stderr.write(`[community-retry] loaded ${VERSION}; native model retries=0\n`)
   process.env.ZCODE_COMMUNITY_RETRY_ACTIVE = VERSION
+  process.env.ZCODE_COMMUNITY_RETRY_RUNTIME_PID = String(process.pid)
+  process.env.ZCODE_COMMUNITY_RETRY_DATA = dataDir
   process.argv = [process.execPath, cli, ...argv.slice(2)]
   require(cli)
 }

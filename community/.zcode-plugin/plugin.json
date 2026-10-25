@@ -1,0 +1,5 @@
+{
+  "name": "zcode-community-retry",
+  "version": "0.1.0",
+  "description": "社区自动重试（非官方）：配置与状态工具，需要配套启动器才能保护原生模型请求。"
+}
