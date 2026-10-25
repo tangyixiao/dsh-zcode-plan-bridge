@@ -54,6 +54,29 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 ## 用法
 
+### ZCode Desktop Start Plan 套餐
+
+CLI 的默认 standalone 模式使用 **Individual Coding Plan**，与桌面端的
+**Start Plan** 属于不同计费通道。桌面端显示 Start Plan 额度充足而桥接返回
+`1113` 时，应核对通道，不能据此要求充值。
+
+使用 npm 完整 CLI，并在插件配置中明确选择：
+
+```yaml
+accountMode: start-plan
+zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
+```
+
+该模式使用 CLI 原生 `ZCODE_APP_SERVER_AUTH_MODE=host`，从 ZCode 的
+`billing/current` 读取当前账号有效授权，再通过 `provider/updateAccountConfig`
+配置 `account:zai-start-plan`。模型名来自服务端授权和当前内核的模型定义；
+鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
+桌面端或终端 CLI 的共享默认模型。授权获取失败时直接报错，不回退到 Coding Plan。
+
+本机 2026-10-25 已验证 GLM-5.3 通过
+`https://zcode.z.ai/api/v1/zcode-plan/anthropic` 返回 `OK`。
+未选择该模式时，原有 standalone 行为保持不变。
+
 1. 装一份 ZCode CLI（`npm i -g zcode-app-cli`，或桌面客户端自带的 `zcode.cjs`），并登录有额度的账号。装了桌面端的注意：**保持 npm 全局包跟着桌面端一起升级**——桌面升级后会在 `~/.zcode/v2` 写入新版 builtin，老 CLI（<3.15.3）解析不了会在服务任何请求前直接退出。探测自动在多份内核里选版本最新的一份。
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
