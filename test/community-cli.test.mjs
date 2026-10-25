@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 const bootstrap = fileURLToPath(new URL('../community/bin/agent.cjs', import.meta.url))
 const candidates = [process.env.ZCODE_TEST_CLI, 'D:/npm-global/node_modules/zcode-app-cli/vendor/zcode.cjs', 'D:/ZCode/resources/glm/zcode.cjs'].filter(p => p && fs.existsSync(p))
 
-const runs = candidates.flatMap((cli, i) => i === 0 ? [{ cli, mode: 'success' }, { cli, mode: 'exhausted' }, { cli, mode: 'terminal' }] : [{ cli, mode: 'success' }])
+const runs = candidates.flatMap((cli, i) => i === 0 ? [{ cli, mode: 'success' }, { cli, mode: 'exhausted' }, { cli, mode: 'terminal' }, { cli, mode: 'unlimited' }] : [{ cli, mode: 'success' }])
 for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry transport: ${cli}`, { timeout: 45000 }, async () => {
   assert.ok(fs.existsSync(bootstrap), 'community bootstrap must exist')
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-retry-cli-'))
@@ -21,7 +21,7 @@ for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry tran
     for await (const _chunk of req) {}
     if (!req.url.endsWith('/messages')) { res.writeHead(404).end(); return }
     calls++
-    if (mode !== 'success' || calls < 3) { res.writeHead(429, { 'content-type': 'application/json' }).end(JSON.stringify({ error: mode === 'terminal' ? { code: '1113', message: 'Insufficient balance' } : { code: '1302', message: 'user concurrency limit exceeded' } })); return }
+    if (!['success', 'unlimited'].includes(mode) || calls < (mode === 'unlimited' ? 26 : 3)) { res.writeHead(429, { 'content-type': 'application/json' }).end(JSON.stringify({ error: mode === 'terminal' ? { code: '1113', message: 'Insufficient balance' } : { code: '1302', message: 'user concurrency limit exceeded' } })); return }
     res.writeHead(200, { 'content-type': 'text/event-stream' })
     const events = [
       { type: 'message_start', message: { id: 'msg_fixture', type: 'message', role: 'assistant', model: 'GLM-5.3-Flash', content: [], stop_reason: null, usage: { input_tokens: 1, output_tokens: 0 } } },
@@ -35,7 +35,7 @@ for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry tran
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const origin = `http://127.0.0.1:${server.address().port}`
-  let child, stderr = '', sequence = 0, sessionId, terminal, pending = new Map(), notifications = []
+  let child, stderr = '', loaded = false, sequence = 0, sessionId, terminal, pending = new Map(), notifications = []
   try {
     const builtinSource = path.join(path.dirname(cli), 'provider/zcode-builtin.json')
     const fallbackSource = 'D:/npm-global/node_modules/zcode-app-cli/vendor/provider/zcode-builtin.json'
@@ -54,10 +54,10 @@ for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry tran
       cwd: dir, windowsHide: true, env: { ...process.env, HOME: dir, USERPROFILE: dir, ZCODE_DATA_BASE_DIR: dir,
         ZCODE_APP_SERVER_AUTH_MODE: 'host', ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: builtin,
         ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personal, ZCODE_CLI_SETTINGS_FILE: setting,
-        ZCODE_COMMUNITY_RETRY_CONFIG_JSON: JSON.stringify({ baseDelayMs: 0, maxDelayMs: 0, allowedOrigins: [origin] }),
+        ZCODE_COMMUNITY_RETRY_CONFIG_JSON: JSON.stringify({ mode: mode === 'unlimited' ? 'unlimited' : 'bounded', intervalMs: 0, baseDelayMs: 0, maxDelayMs: 0, allowedOrigins: [origin] }),
       },
     })
-    child.stderr.on('data', b => { stderr = (stderr + b).slice(-6000) })
+    child.stderr.on('data', b => { const combined = stderr + b; loaded ||= combined.includes('[community-retry] loaded '); stderr = combined.slice(-6000) })
     const write = m => child.stdin.write(JSON.stringify(m) + '\n')
     createInterface({ input: child.stdout }).on('line', line => {
       let m; try { m = JSON.parse(line) } catch { return }
@@ -86,10 +86,10 @@ for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry tran
     await new Promise(r => setTimeout(r, 1500))
     await request('session/send', { sessionId, content: 'Reply only RETRY_FIXTURE_OK; do not use tools.' })
     while (!terminal && Date.now() < deadline && child.exitCode === null) await new Promise(r => setTimeout(r, 100))
-    assert.equal(terminal?.type, mode === 'success' ? 'turn.completed' : 'turn.failed', JSON.stringify(terminal) + '\n' + stderr)
-    if (mode === 'success') assert.match(JSON.stringify(terminal), /RETRY_FIXTURE_OK/)
-    assert.equal(calls, mode === 'success' ? 3 : mode === 'terminal' ? 1 : 7, 'native or outer retry must not multiply calls')
-    assert.match(stderr, /community-retry.*loaded/)
+    assert.equal(terminal?.type, ['success', 'unlimited'].includes(mode) ? 'turn.completed' : 'turn.failed', JSON.stringify(terminal) + '\n' + stderr)
+    if (['success', 'unlimited'].includes(mode)) assert.match(JSON.stringify(terminal), /RETRY_FIXTURE_OK/)
+    assert.equal(calls, mode === 'unlimited' ? 26 : mode === 'success' ? 3 : mode === 'terminal' ? 1 : 7, 'native or outer retry must not multiply calls')
+    assert.equal(loaded, true, 'community loader must acknowledge startup')
   } finally {
     if (child) { child.stdin.end(); await Promise.race([new Promise(r => child.once('exit', r)), new Promise(r => setTimeout(r, 2000))]); if (child.exitCode === null) child.kill() }
     server.closeAllConnections(); await new Promise(r => server.close(r))

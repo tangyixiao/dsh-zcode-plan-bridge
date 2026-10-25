@@ -20,13 +20,13 @@ export function classify(status, payload, headers = new Headers()) {
   return { retry: transientStatus.has(status), reason: `http_${status}` }
 }
 
-export function retryAfter(headers, now) {
+export function retryAfter(headers, now, maxMs = 300000) {
   const ms = headers.get('retry-after-ms')
   const value = headers.get('retry-after')
   let result
   if (ms !== null && /^\d+(?:\.\d+)?$/.test(ms.trim())) result = Number(ms)
   else if (value !== null) result = /^\d+(?:\.\d+)?$/.test(value.trim()) ? Number(value) * 1000 : Date.parse(value) - now
-  return Number.isFinite(result) && result >= 0 && result <= 300000 ? Math.round(result) : undefined
+  return Number.isFinite(result) && result >= 0 && result <= maxMs ? Math.round(result) : undefined
 }
 
 export function isNetworkError(error) {

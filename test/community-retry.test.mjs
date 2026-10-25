@@ -1,18 +1,19 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { createRetryFetch } from '../community/runtime/retry-fetch.mjs'
+import { createRetryFetch, sleep } from '../community/runtime/retry-fetch.mjs'
 import { resolveConfig } from '../community/runtime/config.mjs'
 
 const url = 'https://zcode.z.ai/api/v1/zcode-plan/anthropic/v1/messages'
 const init = { method: 'POST', body: JSON.stringify({ model: 'test', messages: [] }) }
-const policy = { baseDelayMs: 0, maxDelayMs: 0, jitter: false }
+const policy = { mode: 'bounded', baseDelayMs: 0, maxDelayMs: 0, jitter: false }
 const failure = (message = 'user concurrency limit exceeded', code = '1302') =>
   new Response(JSON.stringify({ error: { message, code } }), { status: 429, headers: { 'content-type': 'application/json' } })
 const sse = text => new Response(text, { headers: { 'content-type': 'text/event-stream' } })
 const textEvent = 'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"你好"}}\n\n'
 
-test('defaults specify six extra retries, finite budget and bounded buffers', () => {
+test('defaults select unlimited retries with an adjustable fixed interval', () => {
   const c = resolveConfig({})
+  assert.equal(c.mode, 'unlimited'); assert.equal(c.intervalMs, 5000)
   assert.equal(c.maxRetries, 6); assert.equal(c.budgetMs, 600000)
   assert.equal(c.maxBodyBytes, 16 * 1024 * 1024); assert.equal(c.maxProbeBytes, 256 * 1024)
   assert.throws(() => resolveConfig({ maxRetries: -1 }))
@@ -91,7 +92,7 @@ test('unknown SSE, probe overflow and committed tool/reasoning never replay', as
 
 test('cancellation during backoff does not start another attempt', async () => {
   const controller = new AbortController(); let calls = 0
-  const fetch = createRetryFetch(async () => { calls++; return failure() }, { baseDelayMs: 1000 }, {
+  const fetch = createRetryFetch(async () => { calls++; return failure() }, { mode: 'bounded', baseDelayMs: 1000 }, {
     onStatus: s => { if (s.state === 'waiting') controller.abort() },
   })
   await assert.rejects(fetch(url, { ...init, signal: controller.signal }), { name: 'AbortError' })
@@ -178,4 +179,54 @@ test('copied URLSearchParams retains implicit and explicit content types', async
 test('prototype property names are not valid retry configuration keys', () => {
   assert.throws(() => resolveConfig(JSON.parse('{"constructor":1}')))
   assert.throws(() => resolveConfig(JSON.parse('{"__proto__":{}}')))
+})
+
+test('unlimited mode exceeds finite retry/time settings and uses the configured interval', async () => {
+  let calls = 0, clock = 0; const waits = [], states = []
+  const fetch = createRetryFetch(async () => ++calls <= 500 ? failure() : new Response('OK'), {
+    mode: 'unlimited', intervalMs: 1234, maxRetries: 1, budgetMs: 1,
+  }, { now: () => clock, sleep: async ms => { waits.push(ms); clock += ms }, onStatus: state => states.push(state) })
+  assert.equal(await (await fetch(url, init)).text(), 'OK')
+  assert.equal(calls, 501); assert.equal(waits.length, 500)
+  assert.ok(waits.every(ms => ms === 1234))
+  assert.equal(states[0].maxAttempts, null)
+})
+
+test('unlimited mode stops immediately when manually cancelled after many attempts', async () => {
+  let calls = 0; const controller = new AbortController()
+  const fetch = createRetryFetch(async () => { calls++; return failure() }, { mode: 'unlimited', intervalMs: 7 }, {
+    sleep: async () => { if (calls === 150) controller.abort() },
+  })
+  await assert.rejects(fetch(url, { ...init, signal: controller.signal }), { name: 'AbortError' })
+  assert.equal(calls, 150)
+})
+
+test('large bounded retry counts are supported and invalid intervals are rejected', () => {
+  assert.equal(resolveConfig({ mode: 'bounded', maxRetries: 1000000 }).maxRetries, 1000000)
+  assert.throws(() => resolveConfig({ mode: 'anything' }))
+  assert.throws(() => resolveConfig({ intervalMs: -1 }))
+  assert.throws(() => resolveConfig({ intervalMs: 1.5 }))
+})
+
+test('unlimited interval respects a longer provider delay without exponential jitter', async () => {
+  let calls = 0; const waits = []
+  const fetch = createRetryFetch(async () => ++calls === 1 ? new Response('', { status: 503, headers: { 'retry-after': '12' } }) : new Response('OK'),
+    { mode: 'unlimited', intervalMs: 9000 }, { sleep: async ms => waits.push(ms) })
+  await (await fetch(url, init)).text(); assert.deepEqual(waits, [12000])
+})
+
+test('unlimited mode honors provider delays above the old five-minute ceiling', async () => {
+  for (const headers of [{ 'retry-after': '600' }, { 'retry-after-ms': '600000' }, { 'retry-after': new Date(601000).toUTCString() }]) {
+    let calls = 0; const waits = []
+    const fetch = createRetryFetch(async () => ++calls === 1 ? new Response('', { status: 503, headers }) : new Response('OK'),
+      { mode: 'unlimited', intervalMs: 5000 }, { now: () => 1000, sleep: async ms => waits.push(ms) })
+    await (await fetch(url, init)).text(); assert.deepEqual(waits, [600000])
+  }
+})
+
+test('long waits are split into cancellable platform-safe timer chunks', async t => {
+  const original = globalThis.setTimeout, delays = []
+  t.mock.method(globalThis, 'setTimeout', (fn, ms) => { delays.push(ms); return original(fn, 0) })
+  await sleep(2147483647 + 1234, new AbortController().signal)
+  assert.deepEqual(delays, [2147483647, 1234])
 })

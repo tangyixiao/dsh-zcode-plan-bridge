@@ -7,6 +7,9 @@ import { fileURLToPath } from 'node:url'
 const dir = dataDirectory()
 const properties = Object.fromEntries(Object.entries(DEFAULTS).map(([key, value]) => [key,
   Array.isArray(value) ? { type: 'array', items: { type: 'string' } } : { type: typeof value === 'number' ? 'integer' : typeof value }]))
+properties.mode = { type: 'string', enum: ['unlimited', 'bounded'], description: 'unlimited: retry without count/time budget until success or cancellation; bounded: honor maxRetries/budgetMs' }
+properties.intervalMs.description = 'Fixed retry interval in milliseconds for unlimited mode; 10000 = 10 seconds. Longer Retry-After is respected.'
+properties.maxRetries.description = 'Extra attempt count for bounded mode only; large counts are supported.'
 const tools = [
   { name: 'retry_status', description: 'Read community retry configuration and live Agent status. Installation alone does not activate retries.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true } },
   { name: 'retry_configure', description: 'Change community retry settings for newly launched Agents. Does not restart or interrupt current tasks.', inputSchema: { type: 'object', properties, additionalProperties: false } },

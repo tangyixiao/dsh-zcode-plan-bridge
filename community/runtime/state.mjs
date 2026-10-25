@@ -29,7 +29,7 @@ export function saveConfig(dir, patch) {
 
 export function writeRuntime(dir, state) {
   if (!Number.isSafeInteger(state.pid) || state.pid <= 0) throw new Error('Invalid runtime pid')
-  const allowed = ['pid', 'version', 'state', 'at', 'owner', 'requestId', 'attempt', 'maxAttempts', 'delayMs', 'nextAttempt', 'reason', 'retryAt']
+  const allowed = ['pid', 'version', 'state', 'at', 'owner', 'requestId', 'attempt', 'maxAttempts', 'mode', 'intervalMs', 'delayMs', 'nextAttempt', 'reason', 'retryAt']
   const safe = Object.fromEntries(allowed.filter(k => state[k] !== undefined).map(k => [k, state[k]]))
   atomicJson(path.join(dir, 'runtimes', `${state.pid}.json`), safe)
 }

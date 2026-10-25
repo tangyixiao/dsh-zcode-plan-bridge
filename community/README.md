@@ -1,6 +1,6 @@
 # ZCode Community Retry（非官方）
 
-独立的 ZCode 社区自动重试扩展，包含普通插件和配套 Agent 加载器。插件提供配置、状态查询；加载器处理模型请求。仅安装或在市场打开插件开关，不代表原生聊天已启用自动重试。
+独立的 ZCode 社区无限重试扩展，包含普通插件和配套 Agent 加载器。默认无限重试，固定间隔可调。插件提供配置、状态查询；加载器处理模型请求。仅安装或在市场打开插件开关，不代表原生聊天已启用自动重试。
 
 需要 Windows、Node.js 22+ 和兼容 ZCode。已用本机 ZCode 3.16.x 的桌面 CLI、zcode-app-cli 3.16.3-39 连接隔离模拟上游验证。其他版本先运行兼容测试。原生桌面窗口的完整操作验收状态见交付报告。
 
@@ -10,7 +10,13 @@
 
 GitHub 分支中仓库根目录也提供 marketplace.json，指向 community/。在该分支合并前，使用分支的本地克隆或交付安装包；默认分支尚未包含新功能，直接添加默认分支不能安装本版本。
 
-新会话中使用 `/retry-status`，或让 Agent 调用 `retry_status`。工具返回插件实际的 `dataDirectory` 和 `launcher`。`retry_configure` 支持修改 maxRetries、baseDelayMs、maxDelayMs、backoffFactor、jitter、budgetMs、probeTimeoutMs、allowedOrigins 及缓冲上限。配置在下一次 Agent 启动时生效。
+新会话中使用 `/retry-status`，或让 Agent 调用 `retry_status`。工具返回插件实际的 `dataDirectory` 和 `launcher`。`retry_configure` 支持 mode、intervalMs、maxRetries 等配置；配置在下一次 Agent 启动时生效。例如让工具设置以下参数，即无限重试、每 10 秒一次：
+
+```json
+{"mode":"unlimited","intervalMs":10000}
+```
+
+`mode: unlimited` 是默认模式，没有重试次数和累计恢复时长上限。`intervalMs` 单位为毫秒，默认 5000（5 秒），采用固定间隔，不做指数退避或随机抖动；更长的服务端 Retry-After 仍会被遵守。`mode: bounded` 可使用很大的 maxRetries（如 1000000），并遵守 budgetMs 和原退避选项。旧配置未指定 mode 时也使用新的默认无限模式；若需要保留旧版有限行为，请显式设置 bounded。
 
 ## 启用桌面端
 
@@ -36,7 +42,7 @@ node '插件绝对目录\bin\agent.cjs' --cli '原始 zcode.cjs 的绝对路径'
 
 ## 重试边界
 
-默认最多额外重试 6 次，初始等待 5 秒，指数退避上限 60 秒并加入抖动；每个模型请求的恢复预算为 10 分钟。服务端有效等待时间最多接受 5 分钟，超出剩余预算就结束。取消、显式禁止重试、认证失败、1113、套餐权限和长期额度错误直接返回。
+默认以固定 5 秒间隔持续重试可恢复错误，直到成功、取消或返回终止型错误；可通过 intervalMs 调整。无限模式忽略 maxRetries、budgetMs、backoffFactor 和 jitter，不再受到旧版 6 次、10 分钟限制。取消、显式禁止重试、认证失败、1113、套餐权限和长期额度错误仍直接返回。有限模式仍支持次数、累计时长和指数退避配置。
 
 仅在尚未交付文本、推理或工具调用时重试。流已经开始产生有效输出后断开，保留原错误。模块不重新提交整个会话，也不重复执行工具。
 
@@ -46,7 +52,16 @@ node '插件绝对目录\bin\agent.cjs' --cli '原始 zcode.cjs 的绝对路径'
 
 ## DSH 可选接入
 
-新版 dsh-zcode-plan-bridge 中启用 `communityRetry.enabled: true`。桥接包内含同版本模块，不需要另装本插件即可启动；独立 ZCode 插件仍可单独使用。开启时同时关闭 DSH 的外层自动重试；关闭时恢复桥接原重试配置。
+新版 dsh-zcode-plan-bridge 中启用以下配置。桥接包内含同版本模块，不需要另装本插件即可启动；独立 ZCode 插件仍可单独使用。
+
+```yaml
+communityRetry:
+  enabled: true
+  mode: unlimited
+  intervalMs: 10000
+```
+
+无限模式同时取消桥接自己的 15 分钟回合超时，关闭原生与 DSH 外层模型重试，由社区模块统一处理。调用方取消仍被遵守。关闭开关时恢复桥接原行为。
 
 ## 验证与源码
 

@@ -1,7 +1,7 @@
 {
   "name": "zcode-community-retry",
-  "version": "0.1.0",
-  "description": "Unofficial bounded model-request retries for ZCode, with a companion Agent loader",
+  "version": "0.2.0",
+  "description": "Unofficial unlimited ZCode model-request retries with an adjustable interval and companion Agent loader",
   "license": "AGPL-3.0",
   "type": "module",
   "engines": { "node": ">=22" },

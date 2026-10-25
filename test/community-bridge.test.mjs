@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { resolveOptions } from '../lib/index.js'
 import { ZcodeAppServerAdapter } from '../lib/app-server.js'
-import { communityLaunch } from '../lib/community-retry.js'
+import { communityLaunch, turnDeadline } from '../lib/community-retry.js'
 
 test('community retry is off by default and leaves original launch/policy intact', () => {
   const options = resolveOptions({})
@@ -11,6 +11,14 @@ test('community retry is off by default and leaves original launch/policy intact
   assert.deepEqual(launch.args, ['original.cjs']); assert.deepEqual(launch.env, {})
   const adapter = new ZcodeAppServerAdapter({ options: () => options })
   assert.deepEqual(adapter.providerRetryPolicy(), options.retryPolicy)
+})
+
+test('enabled bridge defaults to unlimited and removes its hidden turn deadline', () => {
+  const options = resolveOptions({ communityRetry: { enabled: true, intervalMs: 10000 } })
+  assert.equal(options.communityRetry.config.mode, 'unlimited')
+  assert.equal(options.communityRetry.config.intervalMs, 10000)
+  assert.equal(turnDeadline(900000, true, 1000), Infinity)
+  assert.equal(turnDeadline(900000, false, 1000), 901000)
 })
 
 test('enabled bridge launches shared bootstrap and disables outer retry', () => {

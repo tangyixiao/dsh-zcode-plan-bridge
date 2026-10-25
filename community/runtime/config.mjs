@@ -1,5 +1,6 @@
-export const VERSION = '0.1.0'
+export const VERSION = '0.2.0'
 export const DEFAULTS = Object.freeze({
+  mode: 'unlimited', intervalMs: 5000,
   maxRetries: 6, baseDelayMs: 5000, maxDelayMs: 60000, backoffFactor: 2,
   jitter: true, budgetMs: 600000, probeTimeoutMs: 30000,
   maxBodyBytes: 16 * 1024 * 1024, maxProbeBytes: 256 * 1024,
@@ -13,12 +14,13 @@ export function resolveConfig(raw = {}) {
   /** @type {any} */
   const c = { ...DEFAULTS, ...raw }
   for (const [key, min, max] of [
-    ['maxRetries', 0, 20], ['baseDelayMs', 0, 300000], ['maxDelayMs', 0, 300000],
+    ['maxRetries', 0, Number.MAX_SAFE_INTEGER - 1], ['intervalMs', 0, 86400000], ['baseDelayMs', 0, 300000], ['maxDelayMs', 0, 300000],
     ['backoffFactor', 1, 10], ['budgetMs', 1, 3600000], ['probeTimeoutMs', 1, 300000],
     ['maxBodyBytes', 1, DEFAULTS.maxBodyBytes], ['maxProbeBytes', 1, DEFAULTS.maxProbeBytes],
   ].map(([key, min, max]) => [String(key), Number(min), Number(max)])) {
     if (!Number.isSafeInteger(c[key]) || c[key] < Number(min) || c[key] > Number(max)) throw new Error(`Invalid retry option: ${key}`)
   }
+  if (!['unlimited', 'bounded'].includes(c.mode)) throw new Error('Invalid retry option: mode')
   if (typeof c.jitter !== 'boolean') throw new Error('Invalid retry option: jitter')
   if (!Array.isArray(c.allowedOrigins) || c.allowedOrigins.length > 64) throw new Error('Invalid allowedOrigins')
   c.allowedOrigins = [...new Set(c.allowedOrigins.map(/** @param {string} value */ value => {
