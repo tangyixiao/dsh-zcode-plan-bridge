@@ -140,3 +140,42 @@ test('HTTP authentication failure overrides misleading transient error', async (
   const fetch = createRetryFetch(async () => { calls++; return new Response(JSON.stringify({ error: { code: '1302', message: 'concurrency' } }), { status: 401 }) }, policy)
   await (await fetch(url, init)).text(); assert.equal(calls, 1)
 })
+
+for (const payload of [
+  { error: { type: 'rate_limit_error', message: '[1113] 余额不足，请充值。' } },
+  { error: { type: 'authentication_error', message: '认证失败' } },
+  { error: { type: 'invalid_request_error', message: '无效请求' } },
+  { code: 1113, error: { code: 1302, type: 'rate_limit_error', message: 'concurrency' } },
+]) test(`all terminal signals take precedence: ${JSON.stringify(payload)}`, async () => {
+  let calls = 0; const body = JSON.stringify(payload)
+  const fetch = createRetryFetch(async () => { calls++; return new Response(body, { status: 429 }) }, policy)
+  assert.equal(await (await fetch(url, init)).text(), body); assert.equal(calls, 1)
+})
+
+test('actual StartPlan HTTP429 code 3008/msg concurrency shape retries', async () => {
+  let calls = 0
+  const fetch = createRetryFetch(async () => ++calls < 3 ? new Response(JSON.stringify({ code: 3008, msg: 'user concurrency limit exceeded' }), { status: 429 }) : new Response('OK'), policy)
+  assert.equal(await (await fetch(url, init)).text(), 'OK'); assert.equal(calls, 3)
+})
+
+test('unrecognized valid JSON SSE values preserve bytes and prevent replay', async () => {
+  for (const data of ['null', '1', '[]', '{"choices":[null]}', '{"choices":[{}]}']) {
+    const body = `data: ${data}\n\ndata: {"error":{"code":"1302"}}\n\n`; let calls = 0
+    const fetch = createRetryFetch(async () => { calls++; return sse(body) }, policy)
+    assert.equal(await (await fetch(url, init)).text(), body); assert.equal(calls, 1)
+  }
+})
+
+test('copied URLSearchParams retains implicit and explicit content types', async () => {
+  for (const headers of [undefined, { 'content-type': 'custom/form' }]) {
+    const body = new URLSearchParams({ model: 'fixture' }); let actual
+    const fetch = createRetryFetch(async (u, i) => { actual = new Request(u, i); return new Response('OK') }, policy)
+    await fetch(url, { method: 'POST', body, headers })
+    assert.equal(actual.headers.get('content-type'), new Request(url, { method: 'POST', body, headers }).headers.get('content-type'))
+  }
+})
+
+test('prototype property names are not valid retry configuration keys', () => {
+  assert.throws(() => resolveConfig(JSON.parse('{"constructor":1}')))
+  assert.throws(() => resolveConfig(JSON.parse('{"__proto__":{}}')))
+})

@@ -9,7 +9,7 @@ export const DEFAULTS = Object.freeze({
 /** @param {any} raw @returns {any} */
 export function resolveConfig(raw = {}) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Retry config must be an object')
-  for (const key of Object.keys(raw)) if (!(key in DEFAULTS)) throw new Error(`Unknown retry option: ${key}`)
+  for (const key of Object.keys(raw)) if (!Object.hasOwn(DEFAULTS, key)) throw new Error(`Unknown retry option: ${key}`)
   /** @type {any} */
   const c = { ...DEFAULTS, ...raw }
   for (const [key, min, max] of [

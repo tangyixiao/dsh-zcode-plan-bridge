@@ -25,12 +25,13 @@ function eventDecision(frame) {
   if (data === '[DONE]') return { kind: 'commit' }
   let payload
   try { payload = JSON.parse(data) } catch { return { kind: 'commit' } }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return { kind: 'commit' }
   if (payload.error || payload.type === 'error') return { kind: 'error', payload }
   if (payload.type === 'ping') return { kind: 'meta' }
   if (payload.type === 'message_start' && Array.isArray(payload.message?.content) && payload.message.content.length === 0) return { kind: 'meta' }
   if (payload.type === 'content_block_start' && payload.content_block?.type === 'text' && payload.content_block.text === '') return { kind: 'meta' }
   if (payload.type === 'content_block_start' && payload.content_block?.type === 'thinking' && payload.content_block.thinking === '') return { kind: 'meta' }
-  if (Array.isArray(payload.choices) && payload.choices.length > 0 && payload.choices.every(c => c.finish_reason == null && c.delta && Object.keys(c.delta).every(k => k === 'role'))) return { kind: 'meta' }
+  if (Array.isArray(payload.choices) && payload.choices.length > 0 && payload.choices.every(c => c && typeof c === 'object' && c.finish_reason == null && c.delta && typeof c.delta === 'object' && !Array.isArray(c.delta) && Object.keys(c.delta).every(k => k === 'role'))) return { kind: 'meta' }
   return { kind: 'commit' }
 }
 

@@ -18,7 +18,7 @@ function copyBody(input, init, max) {
   if (body === undefined && input instanceof Request && input.body) return undefined
   if (body == null) return { body }
   if (typeof body === 'string') return Buffer.byteLength(body) <= max ? { body } : undefined
-  if (body instanceof URLSearchParams) { const value = body.toString(); return Buffer.byteLength(value) <= max ? { body: value } : undefined }
+  if (body instanceof URLSearchParams) { const value = body.toString(); return Buffer.byteLength(value) <= max ? { body: new URLSearchParams(value) } : undefined }
   if (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) {
     const bytes = body instanceof ArrayBuffer ? new Uint8Array(body) : new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
     return bytes.byteLength <= max ? { body: bytes.slice() } : undefined

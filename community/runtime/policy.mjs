@@ -7,14 +7,16 @@ export function classify(status, payload, headers = new Headers()) {
   if (status === 401) return { retry: false, reason: 'authentication' }
   if (/^(?:false|0)$/i.test(headers.get('x-should-retry')?.trim() ?? '')) return { retry: false, reason: 'provider_disabled' }
   const error = payload?.error ?? payload
-  const message = typeof error === 'string' ? error : typeof error?.message === 'string' ? error.message : ''
-  const code = String(error?.code ?? error?.type ?? payload?.code ?? message.match(/\[(\d{4})\]/)?.[1] ?? '')
-  if (terminalCodes.has(code) || /insufficient balance|no resource package|unauthori[sz]ed|authentication|invalid.api.key|forbidden|permission.denied|subscription.expired/i.test(message)) {
+  const message = [typeof error === 'string' ? error : undefined, error?.message, error?.msg, payload?.message, payload?.msg].filter(v => typeof v === 'string').join(' ')
+  const codes = [error?.code, payload?.code, ...[...message.matchAll(/\[(\d{4})\]/g)].map(m => m[1])].filter(v => v !== undefined).map(String)
+  const types = [error?.type, payload?.type].filter(v => typeof v === 'string')
+  if (codes.some(code => terminalCodes.has(code)) || types.some(type => /^(?:authentication_error|invalid_request_error|permission_error|insufficient_quota|authorization_error|not_found_error)$/.test(type)) ||
+    /insufficient balance|no resource package|unauthori[sz]ed|authentication|invalid.api.key|forbidden|permission.denied|subscription.expired/i.test(message)) {
     return { retry: false, reason: 'terminal_provider' }
   }
-  if (transientCodes.has(code) || /\b(?:user|model)\s+concurrency\s+limit\s+exceeded\b/i.test(message)) return { retry: true, reason: 'concurrency_or_transient' }
+  if (codes.some(code => transientCodes.has(code)) || /\b(?:user|model)\s+concurrency\s+limit\s+exceeded\b/i.test(message)) return { retry: true, reason: 'concurrency_or_transient' }
   // Explicit structured business failures are authoritative, even in HTTP 429.
-  if (/^\d{4}$/.test(code)) return { retry: false, reason: 'unknown_business_code' }
+  if (codes.some(code => /^\d{4}$/.test(code))) return { retry: false, reason: 'unknown_business_code' }
   return { retry: transientStatus.has(status), reason: `http_${status}` }
 }
 

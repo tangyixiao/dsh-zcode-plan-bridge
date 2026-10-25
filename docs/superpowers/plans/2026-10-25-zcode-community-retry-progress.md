@@ -12,4 +12,18 @@ Task 1: complete. Transport tests 18/18; real CLI fixtures 4/4 (npm success/exha
 
 Task 2: complete. MCP/config/launcher/bootstrap-state tests 4/4; ZCode plugins validate returned ok=true and no diagnostics. Desktop currently has running instances, so launcher must refuse rather than restart them.
 
-Task 3: in progress. Bridge tests observed missing-module failure, then passed 3/3 with default-off, enabled loader, invalid config and running-child snapshot checks. Typecheck passed.
+Task 3: complete (093eff4). Bridge tests passed 3/3; full suite 67/67 and typecheck passed before final review.
+
+Task 4: in progress. Independently reviewed by final_retry_review. Important findings: terminal code/type masking and valid unknown SSE shapes losing bytes. Regraded body-type preservation as Important because it changes a supported request on its first attempt. All findings reproduced RED before one fix pass.
+
+Ruling: Preserve URLSearchParams type in the review fix pass — changing Content-Type can break a supported custom endpoint on the first request, so this is a correctness blocker rather than optional polish — cost if wrong: unnecessary small compatibility fix, covered by implicit/explicit header tests.
+
+Live evidence: source bridge default-off catalog works; enabled loader and outer retries=0 verified, but real HTTP429 {code:3008,msg:user concurrency limit exceeded} was initially not retried because msg was ignored. A zero-retry diagnostic captured only safe shape fields; added exact-shape regression before correcting extraction. Never claim recovery from the first live result.
+
+Final review rulings: managed redirects deliberately fail; runtime active is global to its data directory and current PID/owner must be checked; existing session lock recovery remains separate. Capability substrings are a preflight check, not a guarantee for untested releases. Desktop UI restart deferred while existing tasks run. Costs: redirected model endpoints require direct configuration; users must check current PID; unsupported releases need explicit verification; desktop activation remains unverified.
+
+Final: fixed terminal signal precedence, unknown SSE shape passthrough, form Content-Type preservation, actual code3008/msg classification and prototype-key validation — regression tests observed RED→GREEN; affected transport suite 26/26, full suite 75/75, typecheck passed. No deferred minor findings remain after regrading form-body preservation as correctness.
+
+Live follow-up: real Start Plan Flash short prompt returned OK on attempt 3 with maxAttempts 3, enabled loader=true and DSH outerRetries=0. Default-off catalog also passed. This verifies one actual failed-then-recovered short request, not long-task or desktop UI acceptance.
+
+Installed DSH preflight: activeStreams=0 on existing zcode-cli adapter; old bridge still loaded before package delivery. Inspector closed and diagnostic globals removed immediately after this check.
