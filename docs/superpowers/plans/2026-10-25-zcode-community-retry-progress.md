@@ -8,4 +8,6 @@ Pre-flight: Task 1 exports configuration/transport/bootstrap consumed by Task 2 
 
 Ruling: Keep standalone code in a separately packable community/ package in the bridge repository — shares tested source without a new public repository or duplicate implementation — cost if wrong: package boundaries need adjustment, covered by clean-install tests.
 
-Task 1: in progress.
+Task 1: complete. Transport tests 18/18; real CLI fixtures 4/4 (npm success/exhaustion/1113 and desktop success), 22/22 combined. Observed exactly 3, 7, 1 and 3 physical requests respectively. No account credentials used. Fixed caller cancellation after response return with a reproducing RED→GREEN test.
+
+Task 2: in progress. MCP/config/launcher tests observed missing-module failure before implementation.
