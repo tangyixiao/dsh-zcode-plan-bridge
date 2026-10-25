@@ -54,6 +54,34 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 ## 用法
 
+### ZCode Desktop Start Plan 套餐
+
+CLI 的默认 standalone 模式使用 **Individual Coding Plan**，与桌面端的
+**Start Plan** 属于不同计费通道。桌面端显示 Start Plan 额度充足而桥接返回
+`1113` 时，应核对通道，不能据此要求充值。
+
+使用 npm 完整 CLI，并在插件配置中明确选择：
+
+```yaml
+accountMode: start-plan
+zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
+```
+
+该模式使用 CLI 原生 `ZCODE_APP_SERVER_AUTH_MODE=host`，从 ZCode 的
+`billing/current` 读取当前账号有效授权，再通过 `provider/updateAccountConfig`
+配置 `account:zai-start-plan`。模型名来自服务端授权和当前内核的模型定义；
+鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
+桌面端或终端 CLI 的共享默认模型。授权获取失败时直接报错，不回退到 Coding Plan。
+
+本机 2026-10-25 已验证 GLM-5.3 通过
+`https://zcode.z.ai/api/v1/zcode-plan/anthropic` 返回 `OK`。
+未选择该模式时，原有 standalone 行为保持不变。
+
+`user concurrency limit exceeded` / `model concurrency limit exceeded` 表示
+服务端并发已满，与套餐余额错误 `1113` 不同。插件把这两类临时错误报告为
+`RATE_LIMIT`，由 DSH 的有界、可取消重试策略退避等待。其他客户端的请求也会
+占用同一账号的服务端并发；重试不能增加服务器配额。
+
 1. 装一份 ZCode CLI（`npm i -g zcode-app-cli`，或桌面客户端自带的 `zcode.cjs`），并登录有额度的账号。装了桌面端的注意：**保持 npm 全局包跟着桌面端一起升级**——桌面升级后会在 `~/.zcode/v2` 写入新版 builtin，老 CLI（<3.15.3）解析不了会在服务任何请求前直接退出。探测自动在多份内核里选版本最新的一份。
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
@@ -222,3 +250,19 @@ AGPL-3.0。本仓库是 [kyle123740/dsh-zcode-cli-proxy](https://github.com/kyle
 的衍生版：app-server 通道的逆向结论（回合锁、事件流、鉴权回调）源自上游，
 v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 [liu5269/zcode2api](https://github.com/liu5269/zcode2api)，其代码已不再随本仓库分发。
+# 社区自动重试（可选）
+
+`0.6.0-community.2` 内附 ZCode Community Retry **0.3.0**：可在 ZCode 内安装、用户范围启用的非官方主聊天无限重试插件。使用原来的应用入口，在插件设置修改「重试间隔（秒）」，默认 5 秒。安装、版本限制和验收边界见 [community/README.md](community/README.md)。旧外部桌面启动器已撤回。
+
+DSH 桥接中可单独选择启用，默认关闭：
+
+```yaml
+communityRetry:
+  enabled: true
+  mode: unlimited
+  intervalMs: 10000  # 每 10 秒重试一次
+```
+
+开启后由社区模块统一管理物理请求重试，关闭原生及 DSH 外层重试。无限模式无次数和累计恢复时长上限，且取消桥接自身 15 分钟回合超时；调用方取消仍优先，`session/stop` 使用有响应的请求。已有桥接子进程保持原配置，下次创建才生效。
+
+并发限制、临时网络失败、限流和暂时服务端错误会持续重试，直到成功或取消。1113、认证失败、长期额度和模型权限错误直接返回。有效输出后的中断不重放请求，整个会话与工具不会被重新提交。默认只管理 ZCode/Z.AI/BigModel 推理请求，自定义模型服务需在 `allowedOrigins` 明确列出 origin。DSH 另支持 `mode: bounded` 和较大的 `maxRetries`，该模式仍遵守 `budgetMs`。

@@ -1,0 +1,7 @@
+{
+  "name": "tangyixiao-zcode-community",
+  "owner": { "name": "tangyixiao" },
+  "plugins": [
+    { "name": "zcode-community-retry", "source": "./community", "version": "0.3.0", "description": "非官方主聊天无限重试，插件内设置间隔，Windows ZCode 3.16.x 用户范围" }
+  ]
+}

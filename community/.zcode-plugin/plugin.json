@@ -1,0 +1,13 @@
+{
+  "name": "zcode-community-retry",
+  "version": "0.3.0",
+  "description": "非官方主聊天无限重试，可设置间隔；Windows ZCode 3.16.x 内存接入。",
+  "userConfig": {
+    "intervalSeconds": {
+      "type": "number",
+      "title": "重试间隔（秒）",
+      "description": "默认 5 秒。可设置 0–86400 秒；更长的服务端等待时间仍会遵守。修改后下一次重试采用新值。",
+      "default": 5
+    }
+  }
+}
