@@ -77,6 +77,11 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 `https://zcode.z.ai/api/v1/zcode-plan/anthropic` 返回 `OK`。
 未选择该模式时，原有 standalone 行为保持不变。
 
+`user concurrency limit exceeded` / `model concurrency limit exceeded` 表示
+服务端并发已满，与套餐余额错误 `1113` 不同。插件把这两类临时错误报告为
+`RATE_LIMIT`，由 DSH 的有界、可取消重试策略退避等待。其他客户端的请求也会
+占用同一账号的服务端并发；重试不能增加服务器配额。
+
 1. 装一份 ZCode CLI（`npm i -g zcode-app-cli`，或桌面客户端自带的 `zcode.cjs`），并登录有额度的账号。装了桌面端的注意：**保持 npm 全局包跟着桌面端一起升级**——桌面升级后会在 `~/.zcode/v2` 写入新版 builtin，老 CLI（<3.15.3）解析不了会在服务任何请求前直接退出。探测自动在多份内核里选版本最新的一份。
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
