@@ -2,7 +2,6 @@
 import { createInterface } from 'node:readline'
 import { dataDirectory, readStatus, saveConfig } from '../runtime/state.mjs'
 import { DEFAULTS, VERSION } from '../runtime/config.mjs'
-import { fileURLToPath } from 'node:url'
 
 const dir = dataDirectory()
 const properties = Object.fromEntries(Object.entries(DEFAULTS).map(([key, value]) => [key,
@@ -28,7 +27,7 @@ for await (const line of lines) {
     else if (message.method === 'tools/call') {
       if (message.params?.name === 'retry_status') response = result({ ...readStatus(dir),
         currentAgentPid: Number(process.env.ZCODE_COMMUNITY_RETRY_RUNTIME_PID) || null,
-        launcher: fileURLToPath(new URL('./launch-desktop.mjs', import.meta.url)),
+        desktopIntegration: { supported: false, reason: 'Native ZCode main-session retry plugin is not implemented. External Agent overrides fail independent storage preparation.' },
       })
       else if (message.params?.name === 'retry_configure') response = result({ config: saveConfig(dir, message.params.arguments ?? {}), appliesTo: 'new Agents' })
       else throw new Error('Unknown tool')

@@ -252,6 +252,8 @@ v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 [liu5269/zcode2api](https://github.com/liu5269/zcode2api)，其代码已不再随本仓库分发。
 # 社区自动重试（可选）
 
+**状态更正：ZCode 桌面原生插件尚未实现。** 自定义 Agent 启动器实际触发桌面 unsupported_runtime 存储准备错误，已停用，不应再用于启动 ZCode。现有社区插件仅提供 CLI/DSH 配置与状态工具；CLI/DSH 重试核心可用，不能据此宣称原生桌面主会话已接入。
+
 从 `0.6.0-community.1` 起，社区模块默认无限重试并可调固定间隔。桥接包内附独立的 `zcode-community-retry` 社区插件与 Agent 加载器。它也可单独用于 ZCode；安装、桌面启用与恢复方法见 [community/README.md](community/README.md)。此扩展非官方。
 
 在桥接配置中选择启用：

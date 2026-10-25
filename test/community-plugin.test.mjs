@@ -22,15 +22,10 @@ test('configuration rejects unknown fields and persists atomically', () => {
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('launcher preserves argv paths and refuses an existing ZCode process', () => {
+test('unsupported desktop integration fails before launching or replacing Agent commands', () => {
   const args = { executable: 'D:/Z Code/ZCode.exe', cli: 'D:/Z Code/resources/glm/zcode.cjs', node: process.execPath, dataDir: 'D:/retry data' }
-  assert.throws(() => createDesktopLaunch(args, [{ name: 'ZCode.exe', pid: 1 }]), /already running/)
-  const launch = createDesktopLaunch(args, [])
-  assert.equal(launch.command, args.executable)
-  const agentArgs = JSON.parse(launch.env.ZCODE_AGENT_SERVER_ARGS_JSON)
-  assert.equal(agentArgs[1], '--cli'); assert.equal(agentArgs[2], args.cli)
-  assert.equal(launch.env.ZCODE_AGENT_SERVER_COMMAND, process.execPath)
-  assert.equal(launch.env.NODE_OPTIONS, undefined)
+  assert.throws(() => createDesktopLaunch(args, [{ name: 'ZCode.exe', pid: 1 }]), /native.*not implemented/i)
+  assert.throws(() => createDesktopLaunch(args, []), /native.*not implemented/i)
 })
 
 test('MCP stdio supports initialize/config/status and rejects invalid configuration', { timeout: 10000 }, async () => {
@@ -56,6 +51,8 @@ test('MCP stdio supports initialize/config/status and rejects invalid configurat
     assert.equal(status.result.structuredContent.config.mode, 'unlimited')
     assert.equal(status.result.structuredContent.config.intervalMs, 7000)
     assert.equal(status.result.structuredContent.active, false)
+    assert.equal(status.result.structuredContent.desktopIntegration.supported, false)
+    assert.equal(status.result.structuredContent.launcher, undefined)
     assert.equal(logs, '')
   } finally { child.stdin.end(); await new Promise(r => child.once('exit', r)); rmSync(dir, { recursive: true, force: true }) }
 })
