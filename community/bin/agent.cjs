@@ -16,6 +16,7 @@ async function main() {
   const { resolveConfig, VERSION } = await import('../runtime/config.mjs')
   const { createRetryFetch } = await import('../runtime/retry-fetch.mjs')
   const { dataDirectory, writeRuntime } = await import('../runtime/state.mjs')
+  const { markCommittedResponse, installIdleGuard } = await import('../runtime/model-idle.mjs')
   const dataDir = dataDirectory()
   let raw = {}
   if (process.env.ZCODE_COMMUNITY_RETRY_CONFIG_FILE) {
@@ -33,13 +34,28 @@ async function main() {
   }
   persist()
   setInterval(persist, 20000).unref()
-  globalThis.fetch = createRetryFetch(globalThis.fetch.bind(globalThis), config, { onStatus })
+  const retryFetch = createRetryFetch(globalThis.fetch.bind(globalThis), config, { onStatus })
+  globalThis.fetch = (...args) => retryFetch(...args).then(markCommittedResponse)
   process.stderr.write(`[community-retry] loaded ${VERSION}; native model retries=0\n`)
   process.env.ZCODE_COMMUNITY_RETRY_ACTIVE = VERSION
   process.env.ZCODE_COMMUNITY_RETRY_RUNTIME_PID = String(process.pid)
   process.env.ZCODE_COMMUNITY_RETRY_DATA = dataDir
   process.argv = [process.execPath, cli, ...argv.slice(2)]
-  require(cli)
+  if (config.mode === 'unlimited' && argv.slice(2).some(arg => ['app-server', '--prompt', '-p'].includes(arg))) {
+    const Module = require('node:module'), compile = Module.prototype._compile
+    const marker = /[\w$]+\(this,["']AiSdkModelAdapter["']\)/g
+    if ((source.match(marker) || []).length !== 1) throw new Error('Unsupported CLI stream idle adapter')
+    const key = Symbol.for('zcode-community-retry.cli-idle-install')
+    globalThis[key] = prototype => {
+      installIdleGuard(prototype, resolved => { try { return config.allowedOrigins.includes(new URL(resolved.baseURL).origin) } catch { return false } })
+      delete globalThis[key]
+    }
+    Module.prototype._compile = function (content, filename, ...rest) {
+      if (path.resolve(filename) === cli) content = content.replace(marker, match => `${match};globalThis[Symbol.for('zcode-community-retry.cli-idle-install')](this.prototype)`)
+      return compile.call(this, content, filename, ...rest)
+    }
+    try { require(cli) } finally { Module.prototype._compile = compile }
+  } else require(cli)
 }
 
 main().catch(error => {

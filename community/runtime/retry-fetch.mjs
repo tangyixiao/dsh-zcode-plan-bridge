@@ -67,7 +67,7 @@ export function createRetryFetch(originalFetch, rawConfig = {}, options = {}) {
         }
         const local = config.baseDelayMs === 0 ? 0 : Math.min(config.maxDelayMs, config.baseDelayMs * config.backoffFactor ** (attempt - 1))
         const providerDelay = result ? retryAfter(result.response.headers, now(), unlimited ? Number.MAX_SAFE_INTEGER : 300000) : undefined
-        const delayMs = unlimited ? Math.max(config.intervalMs, providerDelay ?? 0)
+        const delayMs = unlimited ? Math.max(options.getIntervalMs?.() ?? config.intervalMs, providerDelay ?? 0)
           : providerDelay ?? Math.round(local * (config.jitter ? 0.5 + (options.random ?? Math.random)() * 0.5 : 1))
         if (!decision.retry || (!unlimited && (attempt > config.maxRetries || now() - started + delayMs >= config.budgetMs))) {
           emit(result?.response.ok && !decision.retry ? 'returned' : 'failed', { attempt, reason: decision.reason })

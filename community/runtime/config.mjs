@@ -1,4 +1,4 @@
-export const VERSION = '0.2.0'
+export const VERSION = '0.3.0'
 export const DEFAULTS = Object.freeze({
   mode: 'unlimited', intervalMs: 5000,
   maxRetries: 6, baseDelayMs: 5000, maxDelayMs: 60000, backoffFactor: 2,

@@ -7,7 +7,7 @@ export function dataDirectory(env = process.env) {
   return path.resolve(env.ZCODE_COMMUNITY_RETRY_DATA || env.ZCODE_PLUGIN_DATA || path.join(os.homedir(), '.zcode', 'community-retry'))
 }
 
-function atomicJson(file, value) {
+export function atomicJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const tmp = `${file}.${process.pid}.${crypto.randomUUID()}.tmp`
   try { fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + '\n', { mode: 0o600, flag: 'wx' }); fs.renameSync(tmp, file) }
@@ -42,11 +42,11 @@ export function readStatus(dir) {
       const state = JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'))
       let alive = false
       if (Number.isSafeInteger(state.pid) && state.pid > 0) { try { process.kill(state.pid, 0); alive = true } catch {} }
-      runtimes.push({ ...state, live: alive && Date.now() - state.at < 45000 && state.at <= Date.now() + 5000 })
+      runtimes.push({ ...state, live: state.state !== 'disabled' && alive && Date.now() - state.at < 45000 && state.at <= Date.now() + 5000 })
     } catch {}
   }
   return { plugin: 'zcode-community-retry', version: VERSION, installed: true,
     configured: fs.existsSync(path.join(dir, 'config.json')), active: runtimes.some(r => r.live),
     dataDirectory: dir, config: loadConfig(dir), runtimes,
-    note: 'Loaded runtime is not proof of a successful model request. Settings apply to newly launched Agents.' }
+    note: 'Loaded runtime is not proof of a successful model request. Native plugin interval changes apply at the next retry; CLI/DSH configuration applies to newly launched Agents.' }
 }

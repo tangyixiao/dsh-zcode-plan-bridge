@@ -11,8 +11,9 @@ async function failedTurn(message) {
   let listener
   const stopped = []
   adapter.client.onNotification = callback => { listener = callback; return () => { listener = undefined } }
-  adapter.client.notify = (method, params) => stopped.push({ method, params })
-  adapter.client.request = async method => {
+  adapter.client.notify = () => { throw new Error('session/stop must be an acknowledged request') }
+  adapter.client.request = async (method, params) => {
+    if (method === 'session/stop') { stopped.push({ method, params }); return {} }
     assert.equal(method, 'session/send')
     listener({ method: 'session/event', params: {
       sessionId: session.sessionId, type: 'turn.failed', payload: { error: { message } },

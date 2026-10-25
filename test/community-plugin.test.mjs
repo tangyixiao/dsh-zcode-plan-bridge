@@ -22,10 +22,10 @@ test('configuration rejects unknown fields and persists atomically', () => {
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('unsupported desktop integration fails before launching or replacing Agent commands', () => {
+test('withdrawn desktop launcher fails before launching or replacing Agent commands', () => {
   const args = { executable: 'D:/Z Code/ZCode.exe', cli: 'D:/Z Code/resources/glm/zcode.cjs', node: process.execPath, dataDir: 'D:/retry data' }
-  assert.throws(() => createDesktopLaunch(args, [{ name: 'ZCode.exe', pid: 1 }]), /native.*not implemented/i)
-  assert.throws(() => createDesktopLaunch(args, []), /native.*not implemented/i)
+  assert.throws(() => createDesktopLaunch(args, [{ name: 'ZCode.exe', pid: 1 }]), /launcher withdrawn/i)
+  assert.throws(() => createDesktopLaunch(args, []), /launcher withdrawn/i)
 })
 
 test('MCP stdio supports initialize/config/status and rejects invalid configuration', { timeout: 10000 }, async () => {

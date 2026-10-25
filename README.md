@@ -252,11 +252,9 @@ v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 [liu5269/zcode2api](https://github.com/liu5269/zcode2api)，其代码已不再随本仓库分发。
 # 社区自动重试（可选）
 
-**状态更正：ZCode 桌面原生插件尚未实现。** 自定义 Agent 启动器实际触发桌面 unsupported_runtime 存储准备错误，已停用，不应再用于启动 ZCode。现有社区插件仅提供 CLI/DSH 配置与状态工具；CLI/DSH 重试核心可用，不能据此宣称原生桌面主会话已接入。
+`0.6.0-community.2` 内附 ZCode Community Retry **0.3.0**：可在 ZCode 内安装、用户范围启用的非官方主聊天无限重试插件。使用原来的应用入口，在插件设置修改「重试间隔（秒）」，默认 5 秒。安装、版本限制和验收边界见 [community/README.md](community/README.md)。旧外部桌面启动器已撤回。
 
-从 `0.6.0-community.1` 起，社区模块默认无限重试并可调固定间隔。桥接包内附独立的 `zcode-community-retry` 社区插件与 Agent 加载器。它也可单独用于 ZCode；安装、桌面启用与恢复方法见 [community/README.md](community/README.md)。此扩展非官方。
-
-在桥接配置中选择启用：
+DSH 桥接中可单独选择启用，默认关闭：
 
 ```yaml
 communityRetry:
@@ -265,6 +263,6 @@ communityRetry:
   intervalMs: 10000  # 每 10 秒重试一次
 ```
 
-开关默认关闭。开启后由社区模块统一管理物理请求重试，原生模型重试与 DSH 外层重试均关闭；已有子进程保持原配置，下一次创建子进程才生效。日志出现 `community retry loaded` 表示加载成功，兼容性失败会直接返回错误。默认只管理 ZCode/Z.AI/BigModel 官方推理请求，自定义 HTTPS 模型服务需在 `allowedOrigins` 显式列出 origin。
+开启后由社区模块统一管理物理请求重试，关闭原生及 DSH 外层重试。无限模式无次数和累计恢复时长上限，且取消桥接自身 15 分钟回合超时；调用方取消仍优先，`session/stop` 使用有响应的请求。已有桥接子进程保持原配置，下次创建才生效。
 
-并发限制、临时网络失败、限流和服务端临时错误可持续重试，直到成功或取消；1113、认证失败、长期额度或模型权限错误直接返回。无限模式忽略次数和累计预算，且取消桥接自身 15 分钟回合超时；调用方取消仍优先。有效文本、推理或工具调用已经交付后发生的流中断不重放请求；整个会话与工具不会被重新提交。若需大量有限重试，可设置 `mode: bounded` 和较大的 `maxRetries`，该模式仍遵守 `budgetMs`。
+并发限制、临时网络失败、限流和暂时服务端错误会持续重试，直到成功或取消。1113、认证失败、长期额度和模型权限错误直接返回。有效输出后的中断不重放请求，整个会话与工具不会被重新提交。默认只管理 ZCode/Z.AI/BigModel 推理请求，自定义模型服务需在 `allowedOrigins` 明确列出 origin。DSH 另支持 `mode: bounded` 和较大的 `maxRetries`，该模式仍遵守 `budgetMs`。
