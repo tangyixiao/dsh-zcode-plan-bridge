@@ -1,6 +1,6 @@
 {
   "name": "dsh-zcode-plan-bridge",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Exposes the ZCode CLI's bundled agent as a DeepSeek Harness model provider: streaming, image input, per-session reuse, and a model list read from the CLI instead of hard-coded. Derived from kyle123740/dsh-zcode-cli-proxy.",
   "license": "AGPL-3.0",
   "author": "kyle123740",
@@ -42,9 +42,6 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
-    },
-    "engines": {
-      "dsh": ">=0.1.5 <0.3.0-0 || ^0.1.5-rc.1 || ^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1"
     }
   },
   "dependencies": {},
@@ -60,14 +57,16 @@
     "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5",
     "@types/node": "^24.0.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "semver": "^7.8.5"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "dsh": ">=0.1.5 <0.3.0-0 || ^0.1.5-rc.1 || ^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1"
   },
   "files": [
     "lib",
