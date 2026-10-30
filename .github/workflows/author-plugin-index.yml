@@ -1,0 +1,74 @@
+name: Author plugin index
+
+on:
+  pull_request:
+    paths:
+      - market/**
+      - package.json
+      - .github/workflows/author-plugin-index.yml
+  push:
+    branches: [main]
+    paths:
+      - market/**
+      - package.json
+      - .github/workflows/author-plugin-index.yml
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: author-plugin-index-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: market/package-lock.json
+      - name: Install index build dependencies
+        run: npm --prefix market ci --ignore-scripts --registry=https://registry.npmjs.org
+      - name: Test index generation
+        run: npm --prefix market test
+      - name: Generate and validate published plugin index
+        run: npm --prefix market run build
+        env:
+          MARKET_FETCH_ATTEMPTS: '6'
+          MARKET_RETRY_DELAY_MS: '10000'
+          MARKET_FETCH_TIMEOUT_MS: '15000'
+      - name: Upload Pages content
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: market/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Deploy author index
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
