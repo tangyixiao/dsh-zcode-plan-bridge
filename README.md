@@ -66,13 +66,8 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 ### 作者插件源
 
-也可以通过 DSH 原生「发现」页订阅维护者发布的插件源：
-
-[https://tangyixiao.github.io/dsh-zcode-plan-bridge/index.json](https://tangyixiao.github.io/dsh-zcode-plan-bridge/index.json)
-
-在「插件 → 实验性插件」开启「自定义插件市场」，然后进入「发现 → 添加索引源」，粘贴上面的完整地址。源中目前只包含本插件，安装确认页会显示精确的 npm 版本和官方 npm registry。该源由仓库维护者发布，使用 DSH 官方的市场索引格式。
-
-索引只展示本仓库当前版本对应的已发布稳定 npm 包，不混入独立的 `0.6.0-community.*` 预览版。发布新版本时，先完成 npm 发布，再创建 GitHub Release；`Author plugin index` 工作流会重新生成、校验并部署索引，也可以在 Actions 中手动运行。若目标版本还未公开或元数据不合法，部署不会覆盖线上已有索引。
+作者插件源由独立仓库 [tangyixiao/dsh-plugin-market](https://github.com/tangyixiao/dsh-plugin-market) 维护。
+计划使用的订阅地址为 [https://tangyixiao.github.io/dsh-plugin-market/index.json](https://tangyixiao.github.io/dsh-plugin-market/index.json)；上线状态与订阅说明以该独立仓库为准。
 
 可用模型**不是插件写死的**，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：
 
