@@ -2,4 +2,6 @@ node_modules/
 *.log
 .DS_Store
 package-lock.json
+!market/package-lock.json
+market/dist/
 .probe/

@@ -64,6 +64,16 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
 
+### 作者插件源
+
+也可以通过 DSH 原生「发现」页订阅维护者发布的插件源：
+
+[https://tangyixiao.github.io/dsh-zcode-plan-bridge/index.json](https://tangyixiao.github.io/dsh-zcode-plan-bridge/index.json)
+
+在「插件 → 实验性插件」开启「自定义插件市场」，然后进入「发现 → 添加索引源」，粘贴上面的完整地址。源中目前只包含本插件，安装确认页会显示精确的 npm 版本和官方 npm registry。该源由仓库维护者发布，使用 DSH 官方的市场索引格式。
+
+索引只展示本仓库当前版本对应的已发布稳定 npm 包，不混入独立的 `0.6.0-community.*` 预览版。发布新版本时，先完成 npm 发布，再创建 GitHub Release；`Author plugin index` 工作流会重新生成、校验并部署索引，也可以在 Actions 中手动运行。若目标版本还未公开或元数据不合法，部署不会覆盖线上已有索引。
+
 可用模型**不是插件写死的**，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：
 
 | provider | model | context | max output | image |
@@ -79,7 +89,7 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 DSH `0.2.1-rc.3` 在支持范围内。模型选择器正在加载，并不表示宿主拒绝了插件版本：模型列表还要等待 ZCode CLI 启动和 `session/create` 返回。v0.5.1 及以前，这条路径默认可能等待约 130 秒；v0.5.2 为界面查询增加 15 秒上限，超时记录警告并返回备用清单，后台探测继续。备用清单只用于让界面可用，具体模型是否可用仍以 CLI 账号为准。
 
-1. 在 DSH 插件管理中核对**插件版本和安装来源**。截至 2026-10-30，GitHub Release / 市场已有 v0.5.1，官方 npm registry 的 `latest` 仍为 v0.5.0。通过 npm 更新不一定取得 GitHub 上的修复；可用 `npm view dsh-zcode-plan-bridge version --registry=https://registry.npmjs.org` 核对。Desktop 用户可从 [GitHub Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) 下载已发布的 `.tgz`，再通过插件管理添加本地文件。
+1. 在 DSH 插件管理中核对**插件版本和安装来源**。v0.5.1 曾只通过 GitHub Release / 市场发布，npm 默认版本当时仍为 v0.5.0；v0.5.2 已同步发布到 GitHub Release 和官方 npm registry。可用 `npm view dsh-zcode-plan-bridge version --registry=https://registry.npmjs.org` 核对 npm 当前版本。Desktop 用户也可从 [GitHub Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) 下载已发布的 `.tgz`，再通过插件管理添加本地文件。
 2. 在实际使用的插件目录运行 `node bin/dsh-zcode-plan-bridge.js doctor --json` 和 `node bin/dsh-zcode-plan-bridge.js models --json`。这两条命令不发送生成回合。核对诊断输出中的 `zcode.cjs` 路径；显式配置的 `zcodeCliPath` 会覆盖自动探测，旧路径需要更新。账号状态和可用模型可先在 ZCode 本身确认。
 3. 如果 `models` 能成功返回而 DSH 仍持续加载，记录插件、DSH、ZCode CLI 版本、加载持续时间，以及 DSH 日志中的 `zcode:`、`app-server exited`、`could not read the CLI model catalogue` 等相关信息。提交 issue 时附诊断结果即可，不需要提供凭证文件。
 
