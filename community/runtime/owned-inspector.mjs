@@ -1,3 +1,34 @@
+function collectNativeIdentity(pid) {
+  if (process.pid !== pid) return { pid: process.pid }
+  const key = Symbol.for('zcode-community-retry.inspector-watchdog')
+  clearTimeout(globalThis[key])
+  globalThis[key] = setTimeout(() => process.getBuiltinModule('node:inspector').close(), 30000)
+  globalThis[key].unref()
+  const fs = process.getBuiltinModule('node:fs')
+  const execPath = fs.realpathSync(process.execPath), cliPath = fs.realpathSync(process.argv[1])
+  // CLI argv may contain a prompt or other private text. Only emit these known
+  // protocol markers; never return the original argv or positional values.
+  const argv = [execPath, cliPath]
+  if (process.argv[2] === 'app-server') argv.push('app-server')
+  if (process.argv.includes('--stdio')) argv.push('--stdio')
+  const surface = process.argv.indexOf('--surface', 2)
+  if (surface >= 0 && ['desktop', 'terminal'].includes(process.argv[surface + 1])) argv.push('--surface', process.argv[surface + 1])
+  let packageName, packageVersion
+  if (/[\\/]vendor[\\/]zcode\.cjs$/i.test(cliPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(cliPath.replace(/[\\/]vendor[\\/]zcode\.cjs$/i, '/package.json'), 'utf8'))
+      if (pkg.name === 'zcode-app-cli' && typeof pkg.version === 'string') { packageName = pkg.name; packageVersion = pkg.version }
+    } catch {}
+  }
+  return { pid: process.pid, execPath, cliPath, argv, nodeMajor: Number(process.versions.node.split('.')[0]),
+    nodeVersion: process.versions.node, fetch: typeof globalThis.fetch, packageName, packageVersion }
+}
+
+export function nativeIdentityExpression(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) throw new Error('Invalid native parent pid')
+  return `(${collectNativeIdentity.toString()})(${pid})`
+}
+
 /** Short-lived inspector access. Never commandeer an existing debugger. */
 export async function withOwnedInspector(pid, install, io) {
   const unlock = await io.lock()
@@ -12,7 +43,7 @@ export async function withOwnedInspector(pid, install, io) {
     client = await io.connect(endpoint)
     // If the helper disappears after the command is delivered, the Agent itself
     // closes our inspector. This timer belongs only to a positively matching PID.
-    const identity = await client.evaluate(`(()=>{if(process.pid!==${pid})return {pid:process.pid};const k=Symbol.for('zcode-community-retry.inspector-watchdog');clearTimeout(globalThis[k]);globalThis[k]=setTimeout(()=>process.getBuiltinModule('node:inspector').close(),30000);globalThis[k].unref();return {pid:process.pid,argv:process.argv,nodeMajor:Number(process.versions.node.split('.')[0]),fetch:typeof globalThis.fetch}})()`)
+    const identity = await client.evaluate(nativeIdentityExpression(pid))
     verified = identity?.pid === pid
     if (!verified) throw new Error('Native Agent identity mismatch; no code installed')
     result = await install(client, identity)

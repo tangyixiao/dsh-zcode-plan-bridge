@@ -1,6 +1,6 @@
 {
   "name": "zcode-community-retry",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "非官方主聊天无限重试，可设置间隔；Windows ZCode 用户范围内存接入，跟随实际运行时配置路径。",
   "userConfig": {
     "intervalSeconds": {

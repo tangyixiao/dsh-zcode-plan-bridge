@@ -1,7 +1,20 @@
 {
   "name": "tangyixiao-zcode-community",
-  "owner": { "name": "tangyixiao" },
+  "owner": {
+    "name": "tangyixiao"
+  },
   "plugins": [
-    { "name": "zcode-community-retry", "source": "./community", "version": "0.3.1", "description": "非官方主聊天无限重试，插件内设置间隔，Windows ZCode 用户范围与运行时配置路径校验" }
+    {
+      "name": "zcode-community-retry",
+      "source": "./community",
+      "version": "0.3.2",
+      "description": "非官方主聊天无限重试，插件内设置间隔，Windows ZCode 用户范围与运行时配置路径校验"
+    },
+    {
+      "name": "zcode-retry-keeper",
+      "source": "./keeper",
+      "version": "0.1.0",
+      "description": "Automatically keep ZCode Community Retry enabled in user scope."
+    }
   ]
 }

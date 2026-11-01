@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "process", "command": "node.exe", "args": ["${ZCODE_PLUGIN_ROOT}/bin/ensure.mjs", "SessionStart"], "timeoutMs": 60000 }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "process", "command": "node.exe", "args": ["${ZCODE_PLUGIN_ROOT}/bin/ensure.mjs", "UserPromptSubmit"], "timeoutMs": 60000 }] }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "zcode-retry-keeper",
+  "version": "0.1.0",
+  "description": "显式自动恢复 Community Retry：每次新建、恢复或提交聊天时检查当前 Agent。仅关闭 Retry 会由 Keeper 恢复；关闭或卸载 Keeper 即撤销此策略。不会启用其它插件。",
+  "userConfig": {
+    "settingsFile": {
+      "type": "file",
+      "title": "当前宿主的设置文件绑定",
+      "description": "与 Keeper 绑定配置中此 Desktop 或 CLI 的设置文件保持一致，以便首次接入失败后关闭 Keeper 也能撤销策略。成功接入时会与真实父 Agent 校验；不要绑定另一个宿主的文件。",
+      "default": ""
+    }
+  }
+}
