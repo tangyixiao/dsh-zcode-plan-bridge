@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "data": {
+    "server_time": 1793515726,
+    "plans": [
+      {
+        "user_plan_id": "user-plan-redacted",
+        "plan_id": "plan-redacted",
+        "status": "active",
+        "starts_at": 1793359434,
+        "ends_at": 1793581200,
+        "entitlements": [
+          {
+            "entitlement_id": "entitlement-redacted",
+            "show_name": "GLM-5.3-Flash",
+            "meter": "model_usage",
+            "unit_type": "tokens",
+            "capabilities": ["model:glm-5.3-flash"],
+            "grant_units": 1,
+            "period": "daily",
+            "priority": 1,
+            "effective_at": 1793359434
+          }
+        ]
+      }
+    ],
+    "balances": [
+      {
+        "bucket_id": "bucket-redacted",
+        "user_plan_id": "user-plan-redacted",
+        "plan_id": "plan-redacted",
+        "entitlement_id": "entitlement-redacted",
+        "show_name": "GLM-5.3-Flash",
+        "meter": "model_usage",
+        "unit_type": "tokens",
+        "capabilities": ["model:glm-5.3-flash"],
+        "priority": 1,
+        "plan_priority": 1,
+        "entitlement_priority": 1,
+        "total_units": 1,
+        "used_units": 0,
+        "remaining_units": 1,
+        "available_units": 1,
+        "period_start": 1793491200,
+        "period_end": 1793577600,
+        "expires_at": 1793581200
+      }
+    ]
+  }
+}

@@ -74,10 +74,18 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 ```
 
 该模式使用 CLI 原生 `ZCODE_APP_SERVER_AUTH_MODE=host`，从 ZCode 的
-`billing/current` 读取当前账号有效授权，再通过 `provider/updateAccountConfig`
+`billing/balance?app_version=<当前内核版本>` 读取当前账号有效授权，再通过 `provider/updateAccountConfig`
 配置 `account:zai-start-plan`。模型名来自服务端授权和当前内核的模型定义；
 鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
 桌面端或终端 CLI 的共享默认模型。授权获取失败时直接报错，不回退到 Coding Plan。
+
+`0.6.0-community.4` 改用 3.17.1 实际使用的 balance 接口；已弃用的
+`billing/current` 可能返回 HTTP 200 / code 0 的空对象，不能据此认定账号没有套餐。
+请求仅使用同一 ZCode 数据根目录下现有的 `.zcode/v2/telemetry-state.json.deviceMid`，
+不会生成或改写设备标识。缺少合法设备标识、查询失败和没有有效授权分别报错。
+模型从当前余额桶的 capabilities / show_name 与内核定义取交集，并核对套餐实例、
+权益归属和生效/到期时间；当前 balances 为空时不沿用旧模型名单。
+仅为旧响应兼容保留无 balances 字段时的套餐权益解析；不会因此回退到付费套餐。
 
 本机 2026-10-25 已验证 GLM-5.3 通过
 `https://zcode.z.ai/api/v1/zcode-plan/anthropic` 返回 `OK`。
