@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "community-retry": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${ZCODE_PLUGIN_ROOT}/bin/tools.mjs"],
+      "env": { "ZCODE_COMMUNITY_RETRY_INTERVAL_SECONDS": "${user_config.intervalSeconds}" }
+    }
+  }
+}

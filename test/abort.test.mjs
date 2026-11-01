@@ -111,6 +111,35 @@ test('abort stops the upstream turn and frees local state while the consumer is 
   await followup.stream.return()
 })
 
+test('unlimited community waiting exceeds the normal deadline and still cancels through acknowledged stop', async (t) => {
+  const h = harness(t)
+  h.adapter.client.communityRetryEnabled = true
+  h.adapter.client.communityRetryMode = 'unlimited'
+  let now = 1000
+  t.mock.method(Date, 'now', () => now)
+  const controller = new AbortController()
+  const turn = h.start(controller.signal)
+  let settled = false
+  turn.pending.then(() => { settled = true }, () => { settled = true })
+  await flush()
+  await h.tick()
+  assert.equal(h.requests('session/send').length, 1)
+
+  now += 900001
+  await h.tick(500)
+  assert.equal(settled, false, 'unlimited retries must not inherit the bridge turn deadline')
+  assert.equal(h.requests('session/stop').length, 0)
+
+  controller.abort()
+  await assert.rejects(turn.pending, (error) => error.code === 'ABORTED')
+  await flush()
+  assert.equal(h.requests('session/stop').length, 1)
+  assert.equal(typeof h.requests('session/stop')[0].id, 'number')
+  assert.equal(h.adapter.sessions.size, 0)
+  assert.equal(h.adapter.activeStreams.size, 0)
+  assert.equal(h.adapter.turnLocks.size, 0)
+})
+
 test('a pending stop keeps the next prompt queued until the CLI acknowledges it', async (t) => {
   const h = harness(t, { holdStop: true })
   const controller = new AbortController()
