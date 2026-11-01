@@ -8,6 +8,22 @@ import { markCommittedResponse, installIdleGuard } from './model-idle.mjs'
 
 const key = Symbol.for('zcode-community-retry.native.v1')
 
+/** Ask the verified parent runtime. Desktop and npm CLI can use different files. */
+export function resolveNativeSettingsFile(functions) {
+  const getters = functions.filter(fn => { try { return Object.getOwnPropertyDescriptor(fn, 'name')?.value === 'getDefaultConfigPath' } catch { return false } })
+  const paths = getters.map(getter => {
+    const file = getter()
+    // Bundles also expose an export accessor with this name; it returns the
+    // actual getter function, not a second configuration file.
+    if (typeof file === 'function' && Object.getOwnPropertyDescriptor(file, 'name')?.value === 'getDefaultConfigPath') return null
+    if (typeof file !== 'string' || !path.isAbsolute(file)) throw new Error('Invalid Agent settings path')
+    return path.resolve(file)
+  }).filter(Boolean)
+  const unique = [...new Set(paths)]
+  if (unique.length !== 1) throw new Error('Unsupported or ambiguous Agent settings path')
+  return unique[0]
+}
+
 export function pluginEnabled(settingsFile, pluginId) {
   if (!settingsFile || !fs.existsSync(settingsFile)) return true
   const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'))
@@ -62,7 +78,7 @@ export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, se
   let registrationObserved = false
   try { registrationObserved = registered(settingsFile, pluginId, pluginRoot) } catch {}
   const original = globalThis.fetch, leases = new Map(), controllers = new Set(), patches = new Map(), transports = new WeakMap(), idleGuards = new Map()
-  let latest = { pid: process.pid, version: VERSION, owner: 'zcode-plugin', state: 'loaded', at: Date.now() }
+  let latest = { pid: process.pid, version: VERSION, owner: 'zcode-plugin', settingsFile, state: 'loaded', at: Date.now() }
   const persist = () => { try { writeRuntime(dataDir, { ...latest, at: Date.now() }) } catch {} }
   const controller = {
     active: true, pluginId, dataDir, version: VERSION,

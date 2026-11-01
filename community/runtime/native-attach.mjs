@@ -3,8 +3,6 @@ import os from 'node:os'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { readStatus } from './state.mjs'
-import { VERSION } from './config.mjs'
 import { withOwnedInspector } from './owned-inspector.mjs'
 
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -92,9 +90,6 @@ export async function attachNativeRetry({ dataDir, pluginId, leaseFile }) {
   if (process.platform !== 'win32') return { active: false, reason: 'windows_only' }
   const pid = process.ppid
   if (!pluginId?.startsWith('zcode-community-retry@') || !parentLooksNative(pid)) return { active: false, reason: 'not_native_desktop_parent' }
-  if (readStatus(dataDir).runtimes.some(r => r.pid === pid && r.owner === 'zcode-plugin' && r.version === VERSION && r.live)) {
-    return { active: true, pid, verified: true, reused: true, settingsFile: path.join(os.homedir(), '.zcode', 'cli', 'config.json') }
-  }
   return withOwnedInspector(pid, async (client, identity) => {
     if (!isDesktopAgent(identity, pid)) throw new Error('Native Agent identity mismatch; no code installed')
     await client.evaluate('process.env.ZCODE_COMMUNITY_RETRY_NATIVE_PID=String(process.pid);true')
@@ -104,7 +99,7 @@ export async function attachNativeRetry({ dataDir, pluginId, leaseFile }) {
     const functions = await client.call('Runtime.queryObjects', { prototypeObjectId: prototype.result.objectId, objectGroup: 'community-retry' })
     const installed = await client.call('Runtime.callFunctionOn', {
       objectId: functions.objects.objectId, returnByValue: true,
-      functionDeclaration: `function(){const classes=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelExecution'&&typeof f.prototype?.resolveProviderTransport==='function'&&typeof f.prototype?.bindModel==='function'&&typeof f.prototype?.createFactory==='function'}catch{return false}});if(classes.length!==1)throw Error('Unsupported or ambiguous model execution transport');const adapters=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelAdapter'&&typeof f.prototype?.streamTextWithResolved==='function'&&typeof f.prototype?.generateTextWithResolved==='function'}catch{return false}});if(adapters.length!==1)throw Error('Unsupported native stream idle adapter');const r=process.mainModule.require.bind(process.mainModule),fs=r('node:fs'),p=r('node:path');const s=fs.readFileSync(process.argv[1],'utf8');if(!s.includes('globalThis.fetch')||!s.includes('ZCODE_MODEL_RETRY_MAX_RETRIES'))throw Error('Unsupported Agent transport');const a=${args};a.settingsFile=p.join(r('node:os').homedir(),'.zcode','cli','config.json');a.transportPrototypes=classes.map(f=>f.prototype);a.adapterPrototypes=adapters.map(f=>f.prototype);return r(${JSON.stringify(runtime)}).installNativeRetry(a)}`,
+      functionDeclaration: `function(){const classes=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelExecution'&&typeof f.prototype?.resolveProviderTransport==='function'&&typeof f.prototype?.bindModel==='function'&&typeof f.prototype?.createFactory==='function'}catch{return false}});if(classes.length!==1)throw Error('Unsupported or ambiguous model execution transport');const adapters=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelAdapter'&&typeof f.prototype?.streamTextWithResolved==='function'&&typeof f.prototype?.generateTextWithResolved==='function'}catch{return false}});if(adapters.length!==1)throw Error('Unsupported native stream idle adapter');const r=process.mainModule.require.bind(process.mainModule),fs=r('node:fs');const s=fs.readFileSync(process.argv[1],'utf8');if(!s.includes('globalThis.fetch')||!s.includes('ZCODE_MODEL_RETRY_MAX_RETRIES'))throw Error('Unsupported Agent transport');const a=${args},runtime=r(${JSON.stringify(runtime)});a.settingsFile=runtime.resolveNativeSettingsFile(this);a.transportPrototypes=classes.map(f=>f.prototype);a.adapterPrototypes=adapters.map(f=>f.prototype);return runtime.installNativeRetry(a)}`,
     })
     const result = installed.result.value
     await client.call('Runtime.releaseObjectGroup', { objectGroup: 'community-retry' })

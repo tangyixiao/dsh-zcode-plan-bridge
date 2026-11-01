@@ -1,6 +1,6 @@
 {
   "name": "zcode-community-retry",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Unofficial in-app ZCode unlimited retry plugin with configurable interval and optional CLI/DSH integration",
   "license": "AGPL-3.0",
   "type": "module",

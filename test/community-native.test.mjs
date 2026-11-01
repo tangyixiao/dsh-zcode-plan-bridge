@@ -12,6 +12,26 @@ import { fileURLToPath } from 'node:url'
 const bootstrap = fileURLToPath(new URL('../community/bin/agent.cjs', import.meta.url))
 const candidates = [process.env.ZCODE_TEST_CLI, 'D:/npm-global/node_modules/zcode-app-cli/vendor/zcode.cjs', 'D:/ZCode/resources/glm/zcode.cjs'].filter(p => p && fs.existsSync(p))
 
+// Windows can report an exited Agent's inspector socket as busy briefly.
+// Wait only for the test fixture's own bind; an existing debugger is never stopped.
+async function listenFixtureInspector(server) {
+  const deadline = Date.now() + 3000
+  while (true) {
+    try {
+      await new Promise((resolve, reject) => {
+        const failed = error => { server.off('listening', listening); reject(error) }
+        const listening = () => { server.off('error', failed); resolve() }
+        server.once('error', failed); server.once('listening', listening)
+        server.listen(9229, '127.0.0.1')
+      })
+      return
+    } catch (error) {
+      if (error.code !== 'EADDRINUSE' || Date.now() >= deadline) throw error
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+  }
+}
+
 const runs = [{cli: 'D:/ZCode/resources/glm/zcode.cjs', mode: 'unlimited'}, {cli: 'D:/ZCode/resources/glm/zcode.cjs', mode: 'late'}]
 for (const {cli, mode} of runs) test(`native Desktop Agent ${mode} loads retry through the installed plugin: ${cli}`, { timeout: 80000 }, async () => {
   assert.ok(fs.existsSync(bootstrap), 'community bootstrap must exist')
@@ -47,7 +67,7 @@ for (const {cli, mode} of runs) test(`native Desktop Agent ${mode} loads retry t
     const builtin = path.join(dir, 'builtin.json'), personal = path.join(dir, 'personal.json'), setting = path.join(dir, '.zcode', 'cli', 'config.json')
     fs.mkdirSync(path.dirname(setting), {recursive:true})
     const pluginRoot = mode === 'late' ? path.join(dir,'plugin') : path.resolve('community')
-    if (mode === 'late') {fs.cpSync(path.resolve('community'),pluginRoot,{recursive:true});fs.writeFileSync(path.join(pluginRoot,'hooks/hooks.json'),JSON.stringify({hooks:{}}));busy=createServer((q,r)=>r.end('[]'));await new Promise((r,j)=>{busy.once('error',j);busy.listen(9229,'127.0.0.1',r)})}
+    if (mode === 'late') {fs.cpSync(path.resolve('community'),pluginRoot,{recursive:true});fs.writeFileSync(path.join(pluginRoot,'hooks/hooks.json'),JSON.stringify({hooks:{}}));busy=createServer((q,r)=>r.end('[]'));await listenFixtureInspector(busy)}
     fs.writeFileSync(builtin, JSON.stringify(release))
     fs.writeFileSync(personal, JSON.stringify({ schemaVersion: 1, config: {
       providerConfigRules: { providerRules: [] }, modelConfigRules: { providerModelRules: [], manualProviderModelRules: [] },

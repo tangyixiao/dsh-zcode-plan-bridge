@@ -1,16 +1,18 @@
-# ZCode Community Retry 0.3.0（非官方）
+# ZCode Community Retry 0.3.1（非官方）
 
 在 ZCode 内安装、启用的主聊天无限重试插件。默认每 5 秒重试，可在插件设置调整间隔；持续重试可恢复错误，直到成功、手动停止或收到终止错误。使用原来的 ZCode 快捷方式打开应用。
 
 ## 安装与使用
 
 1. 在 ZCode 的「插件市场 → 添加」中选择本地市场目录。源码目录为 `community/`；独立安装包解压后的根目录同时包含 `marketplace.json` 和 `.zcode-plugin/plugin.json`。
-2. 安装或更新 `zcode-community-retry@tangyixiao-zcode-community`，确认版本为 **0.3.0**，在**用户范围**启用。
+2. 安装或更新 `zcode-community-retry@tangyixiao-zcode-community`，确认版本为 **0.3.1**，在**用户范围**启用。
 3. 打开插件详情或配置，设置 **重试间隔（秒）**，例如 `10` 表示每 10 秒一次。保存后，下一轮重试读取新值；已经开始的等待会先完成。默认 5，范围 0–86400，允许小数。更长的服务端 `Retry-After` 仍会遵守。
 4. 打开新聊天，正常提交任务。遇到受支持的暂时失败，插件会保持当前请求并重试。点击 ZCode 的停止按钮可取消等待。
 5. 如需检查，在新聊天使用 `/retry-status`，让 Agent 调用 `retry_status`。核对 `desktopIntegration.active: true`、版本及 `currentAgentPid`。顶层 `active` 可能包括其他 Agent，不单独作为当前聊天已接入的依据。
 
-本版支持 **Windows、ZCode Desktop 3.16.3 / 同系列兼容内部接口**，MCP 辅助进程需要可用的 Node.js 22+。当前只支持用户范围安装和配置；项目范围的开关/间隔尚不支持。更新后已有 Agent 可能保留旧模块，先新建聊天；如果插件仍显示旧版本，待任务结束后正常重开应用。
+原生接入针对 **Windows ZCode Desktop**，MCP 辅助进程需要可用的 Node.js 22+。本次离线协议使用 Desktop **3.17.1**，3.16.3 为原有验证版本；未来版本仍须核对内部接口。当前只支持用户范围安装和配置；项目范围的开关/间隔尚不支持。更新后已有 Agent 可能保留旧模块，先新建聊天；如果插件仍显示旧版本，待任务结束后正常重开应用。
+
+0.3.1 增加运行时配置路径核验：原生接入调用已验证父 Agent 的纯函数 `getDefaultConfigPath()`，跟随该运行时实际使用的用户设置。Desktop 3.17.1 仍使用 `config.json`，npm CLI 3.17.1 使用独立的 `setting.json`；两者开关分别保留，不会按文件是否存在来切换、迁移文件或同步开关。CLI 停用并不表示 Desktop 停用。新 MCP helper 始终重新核对父 Agent 身份，不把旧状态文件中的活 PID 当成接入证明。无法唯一确定设置路径时，原生接入明确失败。
 
 GitHub 仓库根目录的 `marketplace.json` 也指向 `community/`。本改动位于工作分支/草稿 PR 时，应选择交付安装包或该分支的本地克隆；未合并的默认分支不包含本版。
 

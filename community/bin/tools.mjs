@@ -4,7 +4,6 @@ import { atomicJson, dataDirectory, readStatus, saveConfig } from '../runtime/st
 import { DEFAULTS, VERSION } from '../runtime/config.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
-import os from 'node:os'
 import { attachNativeRetry } from '../runtime/native-attach.mjs'
 import { nativeConfig, pluginEnabled } from '../runtime/native-runtime.mjs'
 
@@ -14,9 +13,8 @@ if (!fs.existsSync(path.join(dir, 'config.json')) && process.env.ZCODE_COMMUNITY
   const seconds = Number(process.env.ZCODE_COMMUNITY_RETRY_INTERVAL_SECONDS)
   if (Number.isFinite(seconds) && seconds >= 0 && seconds <= 86400) saveConfig(dir, { intervalMs: Math.round(seconds * 1000) })
 }
-const settingsFile = path.join(os.homedir(), '.zcode', 'cli', 'config.json')
 const candidate = process.platform === 'win32' && process.env.ZCODE_PLUGIN_ID?.startsWith('zcode-community-retry@')
-let native = { active: false, reason: 'not_initialized', settingsFile }, attaching = false
+let native = { active: false, reason: 'not_initialized' }, attaching = false
 const lease = () => atomicJson(leaseFile, { pid: process.pid, parentPid: process.ppid, at: Date.now() })
 async function activate() {
   if (attaching) return

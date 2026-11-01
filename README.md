@@ -11,12 +11,16 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
 
 ## 适配版本（v0.5.x，双内核跟进）
 
+v0.5.2 修复取消后停止请求未发出、`session/stop` 通知被 CLI 忽略，以及正文 / reasoning 伪工具标签在跨 delta 和收尾批次中的泄漏。模型列表查询最多等待 15 秒，超时先显示备用清单；后台探测成功后，后续刷新使用真实清单。
+
+v0.5.1 把 DSH 版本声明放到顶层 `engines.dsh`，供宿主和市场读取；v0.5.0 的嵌套 `dsh.engines.dsh` 不属于宿主读取的字段，实际通过 peer 依赖判断。兼容范围和模型转发行为保持不变。
+
 这个桥同时耦合两个内核，两边都要跟：
 
 | 内核 | 实测通过 | 声明范围 |
 |---|---|---|
 | **ZCode CLI**（`zcode-app-cli` / 桌面端 builtin） | **3.16.3**（npm `3.16.3-39`，2026-10-24）；通道方法 73→99 零删除、事件枚举不变、`approvalMode:"user-once"` 已适配 | 无硬性下限，但 **3.14.x 与升级后的桌面端共存会启动即崩**（桌面写出的新 builtin 老内核解不了，#207），建议 ≥ 3.15.3 |
-| **DSH 宿主**（`@deepseek-ai/dsh-llm` 线） | 0.2.1-rc.3（2026-10-23，devDeps 即此版） | `dsh.engines.dsh = >=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1`；cordis `>=4.0.1 <5.0.0`（4.0.5 实测）、schemastery `>=3.18.1 <4.0.0`（3.18.5 实测） |
+| **DSH 宿主**（`@deepseek-ai/dsh-llm` 线） | 0.2.1-rc.3（2026-10-23，devDeps 即此版） | `engines.dsh = >=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1`；cordis `>=4.0.1 <5.0.0`（4.0.5 实测）、schemastery `>=3.18.1 <4.0.0`（3.18.5 实测） |
 
 预发布 semver 很严：`>=0.1.5-rc.1` 对 `0.2.1-rc.3` 求值是 **false**（只有带同一
 `major.minor.patch` 的比较项才接纳预发布），所以 peer 按线 caret 枚举，不写开区间。
@@ -54,6 +58,8 @@ DSH Agent ──► provider "zcode-cli" ──► ZcodeAppServerAdapter
 
 ## 用法
 
+**DSH Desktop 安装/更新**：从本仓库的 GitHub Release 下载 `.tgz`，在「扩展 → 插件管理 → 添加插件」中选取本地文件。Desktop profile 由桌面应用管理。若已装有 `0.6.0-community.*` 预览版，请保留该版本；0.5.x 稳定线不包含该预览分支的无限重试功能，不能作为其原位升级。
+
 ### ZCode Desktop Start Plan 套餐
 
 CLI 的默认 standalone 模式使用 **Individual Coding Plan**，与桌面端的
@@ -86,6 +92,11 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 2. 把本插件装进 DSH profile，重启 DSH。
 3. DSH 设置 → 模型（Models）→ 提供方 **ZCode CLI (account bridge)** → 选模型。
 
+### 作者插件源
+
+作者插件源由独立仓库 [tangyixiao/dsh-plugin-market](https://github.com/tangyixiao/dsh-plugin-market) 维护。
+计划使用的订阅地址为 [https://tangyixiao.github.io/dsh-plugin-market/index.json](https://tangyixiao.github.io/dsh-plugin-market/index.json)；上线状态与订阅说明以该独立仓库为准。
+
 可用模型**不是插件写死的**，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：
 
 | provider | model | context | max output | image |
@@ -96,6 +107,16 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 
 3.15+ 的 builtin registry 还带了 `account:zai-highspeed-card` 等 HighSpeed 通道；清单里出现
 `account:` 前缀路由时插件仍然优先它（烧计划额度），`zai-api` 路由按 CLI 自己的计费口径走。
+
+### DSH rc.3 一直显示「正在加载模型」
+
+DSH `0.2.1-rc.3` 在支持范围内。模型选择器正在加载，并不表示宿主拒绝了插件版本：模型列表还要等待 ZCode CLI 启动和 `session/create` 返回。v0.5.1 及以前，这条路径默认可能等待约 130 秒；v0.5.2 为界面查询增加 15 秒上限，超时记录警告并返回备用清单，后台探测继续。备用清单只用于让界面可用，具体模型是否可用仍以 CLI 账号为准。
+
+1. 在 DSH 插件管理中核对**插件版本和安装来源**。v0.5.1 曾只通过 GitHub Release / 市场发布，npm 默认版本当时仍为 v0.5.0；v0.5.2 已同步发布到 GitHub Release 和官方 npm registry。可用 `npm view dsh-zcode-plan-bridge version --registry=https://registry.npmjs.org` 核对 npm 当前版本。Desktop 用户也可从 [GitHub Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) 下载已发布的 `.tgz`，再通过插件管理添加本地文件。
+2. 在实际使用的插件目录运行 `node bin/dsh-zcode-plan-bridge.js doctor --json` 和 `node bin/dsh-zcode-plan-bridge.js models --json`。这两条命令不发送生成回合。核对诊断输出中的 `zcode.cjs` 路径；显式配置的 `zcodeCliPath` 会覆盖自动探测，旧路径需要更新。账号状态和可用模型可先在 ZCode 本身确认。
+3. 如果 `models` 能成功返回而 DSH 仍持续加载，记录插件、DSH、ZCode CLI 版本、加载持续时间，以及 DSH 日志中的 `zcode:`、`app-server exited`、`could not read the CLI model catalogue` 等相关信息。提交 issue 时附诊断结果即可，不需要提供凭证文件。
+
+Issue #5 的截图没有错误信息、等待时间或诊断日志，无法据此确定报告者卡住的具体原因。这里的等待上限、探测会话清理和安装来源核对均有独立验证，不代表已在报告者环境复现。
 
 同一 model id 出现在多个 provider 上时，插件**优先 `account:` 开头的路由**（烧计划额度），
 其余按 CLI 上报顺序取第一条；想指定确切路由，就在 `cliModels` 里给条目写
@@ -154,11 +175,8 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 app-server **一个会话同时只允许一个在途回合**。上一轮被中止 / 超时 / 静默丢弃时它不会自己释放，
 下一轮 `session/send` 就被拒成 `A prompt is already running for this session`。通道层做六件事兜底：
 
-1. **补发 `session/stop`**：本轮只要没正常结束（超时 / 被中止 / 发送失败 / `turn.failed`），
-   生成器 `finally` 一定补一刀，不把锁留给下一轮；
-2. **撞锁自愈**：`send` 被回「already running」→ 补 stop → 等 1.5s → 原会话重试一次；
-   被回「session … not found」（会话被回收 / 进程重启）→ 丢弃缓存条目、新建会话，
-   `firstTurn` 语义自动重放整段对话，历史不丢；
+1. **立即请求 `session/stop`**：`AbortSignal` 触发时主动发送带请求 ID 的停止请求，即使宿主已停止拉取流也会执行。CLI 会忽略无 ID 的通知。清理和回合锁释放不依赖生成器继续运行，迟到的生成器收尾也不会停止下一轮；超时 / 发送失败 / `turn.failed` 仍由收尾路径清理；
+2. **撞锁自愈**：`send` 被回「already running」时请求 stop，再新建会话重试一次；被回「session … not found」（会话被回收 / 进程重启）时同样新建。中断后的下一轮也会新建会话，按 `firstTurn` 语义重放整段对话；旧会话迟到的结束事件无法污染新一轮结果；
 3. **回合串行化**：同一 DSH 会话的两轮排队跑（最多等 60s，超时放行交给 2 处理）；
 4. **进程退出即作废 + 快败**：app-server 子进程退出（含 spawn 失败）时清空会话映射，
    **在途的流会立刻收到一个回合失败收尾**，不用干等回合超时；
@@ -166,6 +184,8 @@ app-server **一个会话同时只允许一个在途回合**。上一轮被中�
    DSH 侧编辑 / 回退过历史就重建会话、按首轮语义重放新分支；
 6. **模型映射**：DSH 选的模型 id 经 catalogue 解析成 `{providerId, modelId}`；
    同一会话中途换模型时在原会话上重发 `session/setModel`，解析不出来就保留会话默认模型并记 warn。
+
+正文和 reasoning 各持有独立的流式过滤状态。可能的伪工具标签前缀暂存到能够判断后再发出，完整标签和跨 delta 的标签都会截断对应通道；收尾队列也走相同过滤。普通词语 `function_calls`、HTML 和大小比较保持原样。正文最终块与已发送的正文保持一致，避免收尾时重新带回被拦截的内容。
 
 ## 诊断命令
 
