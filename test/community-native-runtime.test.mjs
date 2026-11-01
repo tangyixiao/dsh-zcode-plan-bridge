@@ -5,10 +5,127 @@ import os from 'node:os'
 import path from 'node:path'
 import { isDesktopAgent } from '../community/runtime/native-attach.mjs'
 import { installNativeRetry, nativeConfig, pluginEnabled } from '../community/runtime/native-runtime.mjs'
-import { readStatus, saveConfig } from '../community/runtime/state.mjs'
+import { readStatus, saveConfig, writeRuntime } from '../community/runtime/state.mjs'
 
 const pluginId = 'zcode-community-retry@test'
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+test('runtime status preserves only the safe process start identity, not private values', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'native-start-identity-'))
+  const startedAt = '2026-11-01T11:00:00.1234567Z'
+  try {
+    writeRuntime(dir, { pid: process.pid, startedAt, prompt: 'PRIVATE_PROMPT_MARKER', headers: { authorization: 'PRIVATE_TOKEN_MARKER' } })
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'runtimes', `${process.pid}.json`), 'utf8')), { pid: process.pid, startedAt })
+  } finally {
+    assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir()))
+    assert.match(path.basename(dir), /^native-start-identity-/)
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('native installation records and returns its verified process start identity', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'native-start-install-')), original = globalThis.fetch
+  const settingsFile = path.join(dir, 'setting.json'), dataDir = path.join(dir, 'retry-data')
+  const startedAt = '2026-11-01T11:00:00.1234567Z'
+  try {
+    fs.writeFileSync(settingsFile, '{}')
+    saveConfig(dataDir, {})
+    const args = { dataDir, settingsFile, pluginId, pluginPid: process.pid, leaseFile: path.join(dir, 'lease.json'), startedAt }
+    assert.equal(installNativeRetry(args).startedAt, startedAt)
+    assert.equal(installNativeRetry(args).startedAt, startedAt)
+    assert.equal(readStatus(dataDir).runtimes[0].startedAt, startedAt)
+  } finally {
+    globalThis[Symbol.for('zcode-community-retry.native.v1')]?.uninstall()
+    globalThis.fetch = original
+    assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir()))
+    assert.match(path.basename(dir), /^native-start-install-/)
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+for (const revoke of ['keeper-disabled', 'keeper-uninstalled', 'retry-uninstalled', 'global-disabled']) test(`keeper force runs Retry until ${revoke} and aborts its pending wait`, { timeout: 6000 }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'native-keeper-'))
+  const settingsFile = path.join(dir, 'config.json'), dataDir = path.join(dir, 'retry-data')
+  const retryId = 'zcode-community-retry@tangyixiao-zcode-community', keeperId = 'zcode-retry-keeper@tangyixiao-zcode-community'
+  const root = path.join(dir, 'plugins/cache/tangyixiao-zcode-community/zcode-retry-keeper/0.1.0')
+  const retryRoot = path.join(dir, 'plugins/cache/tangyixiao-zcode-community/zcode-community-retry/0.3.1')
+  const keeperEntry = { id: keeperId, installPath: root }, retryEntry = { id: retryId, installPath: retryRoot }
+  const index = path.join(dir, 'plugins/installed_plugins.json'), leaseFile = path.join(dir, 'lease.json')
+  const settings = { plugins: { enabled: true, enabledPlugins: { [retryId]: false, [keeperId]: true } } }
+  const original = globalThis.fetch
+  let calls = 0
+  const fixture = async () => { calls++; return new Response('{"code":"3008","msg":"user concurrency limit exceeded"}', { status: 429, headers: { 'content-type': 'application/json' } }) }
+  try {
+    fs.mkdirSync(path.join(root, '.zcode-plugin'), { recursive: true })
+    fs.writeFileSync(path.join(root, '.zcode-plugin/plugin.json'), '{"name":"zcode-retry-keeper"}')
+    fs.mkdirSync(retryRoot, { recursive: true })
+    fs.writeFileSync(index, JSON.stringify({ plugins: [keeperEntry, retryEntry] }))
+    fs.writeFileSync(settingsFile, JSON.stringify(settings))
+    fs.writeFileSync(leaseFile, JSON.stringify({ pid: process.pid, parentPid: process.pid, at: Date.now() }))
+    saveConfig(dataDir, { intervalMs: 20000 })
+    globalThis.fetch = fixture
+    assert.equal(installNativeRetry({ dataDir, settingsFile, pluginId: retryId, pluginRoot: retryRoot, pluginPid: process.pid, leaseFile }).active, true)
+    const pending = globalThis.fetch('https://zcode.z.ai/api/messages', { method: 'POST', body: '{}' })
+    const rejected = assert.rejects(pending, /disabled/)
+    while (readStatus(dataDir).runtimes[0]?.state !== 'waiting') await wait(10)
+    await wait(1100)
+    assert.equal(readStatus(dataDir).active, true, 'the explicit keeper remains authoritative while Retry itself is false')
+    if (revoke === 'keeper-disabled') settings.plugins.enabledPlugins[keeperId] = false
+    else if (revoke === 'global-disabled') settings.plugins.enabled = false
+    else fs.writeFileSync(index, JSON.stringify({ plugins: revoke === 'retry-uninstalled' ? [keeperEntry] : [retryEntry] }))
+    fs.writeFileSync(settingsFile, JSON.stringify(settings))
+    await rejected
+    assert.equal(calls, 1)
+    assert.equal(readStatus(dataDir).active, false)
+    assert.equal(globalThis.fetch, fixture)
+  } finally {
+    globalThis[Symbol.for('zcode-community-retry.native.v1')]?.uninstall()
+    globalThis.fetch = original
+    assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir()))
+    assert.match(path.basename(dir), /^native-keeper-/)
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('keeper force preserves terminal HTTP 405 and caller cancellation', { timeout: 3000 }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'native-keeper-cancel-'))
+  const file = path.join(dir, 'config.json'), dataDir = path.join(dir, 'retry-data'), original = globalThis.fetch
+  const retryId = 'zcode-community-retry@tangyixiao-zcode-community', keeperId = 'zcode-retry-keeper@tangyixiao-zcode-community'
+  const root = path.join(dir, 'plugins/cache/tangyixiao-zcode-community/zcode-retry-keeper/0.1.0')
+  let calls = 0, busy = false
+  const fixture = async () => {
+    calls++
+    return busy ? new Response('{"code":"3008","msg":"user concurrency limit exceeded"}', { status: 429, headers: { 'content-type': 'application/json' } })
+      : new Response('MethodNotAllowed', { status: 405 })
+  }
+  try {
+    fs.mkdirSync(path.join(root, '.zcode-plugin'), { recursive: true })
+    fs.writeFileSync(path.join(root, '.zcode-plugin/plugin.json'), '{"name":"zcode-retry-keeper"}')
+    fs.writeFileSync(path.join(dir, 'plugins/installed_plugins.json'), JSON.stringify({ plugins: [{ id: keeperId, installPath: root }] }))
+    fs.writeFileSync(file, JSON.stringify({ plugins: { enabledPlugins: { [retryId]: false, [keeperId]: true } } }))
+    saveConfig(dataDir, { intervalMs: 20000 })
+    globalThis.fetch = fixture
+    assert.equal(installNativeRetry({ dataDir, settingsFile: file, pluginId: retryId, pluginPid: process.pid, leaseFile: path.join(dir, 'missing') }).active, true)
+    const response = await globalThis.fetch('https://zcode.z.ai/api/messages', { method: 'POST', body: '{}' })
+    assert.equal(response.status, 405)
+    assert.equal(calls, 1, 'forcing activation must not change terminal error policy')
+    busy = true
+    const caller = new AbortController()
+    const pending = globalThis.fetch('https://zcode.z.ai/api/messages', { method: 'POST', body: '{}', signal: caller.signal })
+    const rejected = assert.rejects(pending, /fixture stopped/)
+    while (readStatus(dataDir).runtimes[0]?.state !== 'waiting') await wait(10)
+    caller.abort(new DOMException('fixture stopped', 'AbortError'))
+    await rejected
+    assert.equal(calls, 2)
+    assert.equal(readStatus(dataDir).runtimes[0].state, 'cancelled')
+  } finally {
+    globalThis[Symbol.for('zcode-community-retry.native.v1')]?.uninstall()
+    globalThis.fetch = original
+    assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir()))
+    assert.match(path.basename(dir), /^native-keeper-cancel-/)
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
 
 test('native attachment accepts only the expected bundled Desktop Agent', () => {
   const identity = { pid: 123, nodeMajor: 24, fetch: 'function', argv: ['D:/ZCode/ZCode.exe', 'D:/ZCode/resources/glm/zcode.cjs', 'app-server', '--stdio', '--surface', 'desktop'] }

@@ -19,12 +19,44 @@ export function isDesktopAgent(identity, expectedPid) {
     path.resolve(path.dirname(argv[1]), '../..', 'ZCode.exe').toLowerCase() === path.resolve(argv[0]).toLowerCase()
 }
 
-function parentLooksNative(pid) {
+export function resolveCliPackage(cliPath) {
+  if (typeof cliPath !== 'string' || !path.isAbsolute(cliPath)) throw new Error('Invalid installed CLI kernel path')
+  const cli = fs.realpathSync(cliPath), vendor = path.dirname(cli), root = path.dirname(vendor)
+  if (path.basename(cli).toLowerCase() !== 'zcode.cjs' || path.basename(vendor).toLowerCase() !== 'vendor') throw new Error('Invalid installed CLI kernel path')
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+  if (pkg.name !== 'zcode-app-cli' || typeof pkg.version !== 'string' || !pkg.version.trim()) throw new Error('Invalid zcode-app-cli package identity')
+  const entry = fs.realpathSync(path.join(root, 'bin', 'zcode.js'))
+  if (path.dirname(path.dirname(entry)).toLowerCase() !== root.toLowerCase()) throw new Error('CLI package entry escapes its installation')
+  return { cliPath: cli, packageVersion: pkg.version }
+}
+
+export function isCliAgent(identity, expectedPid, expected) {
+  const argv = identity?.argv, same = (left, right) => typeof left === 'string' && typeof right === 'string' && path.resolve(left).toLowerCase() === path.resolve(right).toLowerCase()
+  return identity?.pid === expectedPid && identity?.nodeMajor >= 22 && identity?.fetch === 'function' &&
+    /[\\/]node\.exe$/i.test(identity.execPath || '') && Array.isArray(argv) &&
+    same(argv[0], identity.execPath) && same(argv[1], expected.cliPath) && same(identity.cliPath, expected.cliPath) &&
+    identity.packageName === 'zcode-app-cli' && identity.packageVersion === expected.packageVersion
+}
+
+function parentMetadata() {
+  const pid = process.ppid
   const output = execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-    `Get-Process -Id ${pid} | Select-Object Id,ProcessName,Path | ConvertTo-Json -Compress`],
+    `Get-Process -Id ${pid} | Select-Object Id,ProcessName,Path,@{Name='startedAt';Expression={$_.StartTime.ToUniversalTime().ToString('O')}} | ConvertTo-Json -Compress`],
   { encoding: 'utf8', windowsHide: true, timeout: 5000 })
-  const process = JSON.parse(output)
-  return process.Id === pid && /^ZCode$/i.test(process.ProcessName) && /[\\/]ZCode\.exe$/i.test(process.Path)
+  const identity = JSON.parse(output)
+  if (identity.Id !== pid || typeof identity.startedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(identity.startedAt)) throw new Error('Could not verify the direct parent process instance')
+  return identity
+}
+
+/** Read only the real direct parent's instance; never accept an arbitrary PID. */
+export function directParentStartedAt() {
+  return parentMetadata().startedAt
+}
+
+function parentLooksNative(identity, cli) {
+  return cli
+    ? /^node$/i.test(identity.ProcessName) && /[\\/]node\.exe$/i.test(identity.Path)
+    : /^ZCode$/i.test(identity.ProcessName) && /[\\/]ZCode\.exe$/i.test(identity.Path)
 }
 
 async function acquireLock() {
@@ -86,15 +118,17 @@ export async function connectInspector(url, Socket = WebSocket) {
 }
 
 /** Only the plugin's direct Desktop Agent parent can be attached. */
-export async function attachNativeRetry({ dataDir, pluginId, leaseFile }) {
+export async function attachNativeRetry({ dataDir, pluginId, leaseFile, cliPath }) {
   if (process.platform !== 'win32') return { active: false, reason: 'windows_only' }
-  const pid = process.ppid
-  if (!pluginId?.startsWith('zcode-community-retry@') || !parentLooksNative(pid)) return { active: false, reason: 'not_native_desktop_parent' }
+  const pid = process.ppid, cli = cliPath === undefined ? undefined : resolveCliPackage(cliPath)
+  const parent = parentMetadata()
+  if (!pluginId?.startsWith('zcode-community-retry@') || !parentLooksNative(parent, cli)) return { active: false, reason: cli ? 'not_native_cli_parent' : 'not_native_desktop_parent' }
   return withOwnedInspector(pid, async (client, identity) => {
-    if (!isDesktopAgent(identity, pid)) throw new Error('Native Agent identity mismatch; no code installed')
+    if (!(cli ? isCliAgent(identity, pid, cli) : isDesktopAgent(identity, pid))) throw new Error('Native Agent identity mismatch; no code installed')
+    if (directParentStartedAt() !== parent.startedAt) throw new Error('Native Agent process instance changed; no code installed')
     await client.evaluate('process.env.ZCODE_COMMUNITY_RETRY_NATIVE_PID=String(process.pid);true')
     // All arguments are JSON data, never shell interpolation. CJS mainModule owns require.
-    const args = JSON.stringify({ dataDir, pluginId, pluginPid: process.pid, leaseFile, pluginRoot: fileURLToPath(new URL('..', import.meta.url)) })
+    const args = JSON.stringify({ dataDir, pluginId, pluginPid: process.pid, leaseFile, pluginRoot: fileURLToPath(new URL('..', import.meta.url)), startedAt: parent.startedAt })
     const prototype = await client.call('Runtime.evaluate', { expression: 'Function.prototype', objectGroup: 'community-retry' })
     const functions = await client.call('Runtime.queryObjects', { prototypeObjectId: prototype.result.objectId, objectGroup: 'community-retry' })
     const installed = await client.call('Runtime.callFunctionOn', {
@@ -103,6 +137,6 @@ export async function attachNativeRetry({ dataDir, pluginId, leaseFile }) {
     })
     const result = installed.result.value
     await client.call('Runtime.releaseObjectGroup', { objectGroup: 'community-retry' })
-    return { ...result, pid, verified: true }
+    return { ...result, pid, verified: true, cliPath: identity.cliPath ?? identity.argv[1], startedAt: parent.startedAt }
   }, { lock: acquireLock, list: targets, open: target => process._debugProcess(target), connect: connectInspector, pause })
 }

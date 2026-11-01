@@ -7,6 +7,32 @@ import { VERSION } from './config.mjs'
 import { markCommittedResponse, installIdleGuard } from './model-idle.mjs'
 
 const key = Symbol.for('zcode-community-retry.native.v1')
+const retryId = 'zcode-community-retry@tangyixiao-zcode-community'
+const keeperId = 'zcode-retry-keeper@tangyixiao-zcode-community'
+
+function inside(root, file) {
+  const relative = path.relative(root, file)
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+}
+
+/** Only the visible, explicitly enabled companion in this user's cache can force Retry. */
+function keeperEnabled(settingsFile, settings) {
+  if (settings.plugins?.enabledPlugins?.[keeperId] !== true) return false
+  try {
+    const storage = path.join(path.dirname(settingsFile), 'plugins')
+    const plugins = JSON.parse(fs.readFileSync(path.join(storage, 'installed_plugins.json'), 'utf8')).plugins
+    if (!Array.isArray(plugins)) return false
+    const matches = plugins.filter(plugin => plugin?.id === keeperId)
+    if (matches.length !== 1 || typeof matches[0].installPath !== 'string' || !path.isAbsolute(matches[0].installPath)) return false
+    const cache = path.join(storage, 'cache'), trusted = path.join(cache, 'tangyixiao-zcode-community', 'zcode-retry-keeper')
+    const install = path.resolve(matches[0].installPath)
+    if (!inside(trusted, install)) return false
+    const realInstall = fs.realpathSync(install), realCache = fs.realpathSync(cache), realTrusted = fs.realpathSync(trusted)
+    if (!inside(realCache, realTrusted) || !inside(realTrusted, realInstall) || !fs.statSync(realInstall).isDirectory()) return false
+    const manifest = fs.realpathSync(path.join(realInstall, '.zcode-plugin', 'plugin.json'))
+    return inside(realInstall, manifest) && JSON.parse(fs.readFileSync(manifest, 'utf8')).name === 'zcode-retry-keeper'
+  } catch { return false }
+}
 
 /** Ask the verified parent runtime. Desktop and npm CLI can use different files. */
 export function resolveNativeSettingsFile(functions) {
@@ -27,7 +53,9 @@ export function resolveNativeSettingsFile(functions) {
 export function pluginEnabled(settingsFile, pluginId) {
   if (!settingsFile || !fs.existsSync(settingsFile)) return true
   const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'))
-  return settings.plugins?.enabled !== false && settings.plugins?.enabledPlugins?.[pluginId] !== false
+  if (settings.plugins?.enabled === false) return false
+  if (settings.plugins?.enabledPlugins?.[pluginId] !== false) return true
+  return pluginId === retryId && keeperEnabled(settingsFile, settings)
 }
 
 export function nativeConfig(dataDir, settingsFile, pluginId) {
@@ -54,7 +82,7 @@ function registered(settingsFile, pluginId, pluginRoot) {
   return plugins?.some(p => p.id === pluginId && path.resolve(p.installPath) === path.resolve(pluginRoot)) === true
 }
 
-export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, settingsFile, pluginRoot, transportPrototypes = [], adapterPrototypes = [] }) {
+export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, settingsFile, pluginRoot, startedAt, transportPrototypes = [], adapterPrototypes = [] }) {
   if (!pluginEnabled(settingsFile, pluginId)) return { active: false, reason: 'plugin_disabled', settingsFile }
   const existing = globalThis[key]
   if (existing?.active && existing.version !== VERSION) existing.uninstall('plugin_updated')
@@ -63,7 +91,7 @@ export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, se
     existing.addLease(pluginPid, leaseFile)
     existing.addPrototypes(transportPrototypes)
     existing.addIdleGuards(adapterPrototypes)
-    return { active: true, pid: process.pid, version: VERSION, reused: true, settingsFile }
+    return { active: true, pid: process.pid, version: VERSION, reused: true, settingsFile, ...startedAt === undefined ? {} : { startedAt } }
   }
   if (typeof globalThis.fetch !== 'function' || typeof AbortSignal.any !== 'function') throw new Error('Unsupported Agent fetch runtime')
   let lastConfig = nativeConfig(dataDir, settingsFile, pluginId), configFailureAt, settingsAt = Date.now(), registrationAt = Date.now()
@@ -78,7 +106,7 @@ export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, se
   let registrationObserved = false
   try { registrationObserved = registered(settingsFile, pluginId, pluginRoot) } catch {}
   const original = globalThis.fetch, leases = new Map(), controllers = new Set(), patches = new Map(), transports = new WeakMap(), idleGuards = new Map()
-  let latest = { pid: process.pid, version: VERSION, owner: 'zcode-plugin', settingsFile, state: 'loaded', at: Date.now() }
+  let latest = { pid: process.pid, version: VERSION, owner: 'zcode-plugin', settingsFile, ...startedAt === undefined ? {} : { startedAt }, state: 'loaded', at: Date.now() }
   const persist = () => { try { writeRuntime(dataDir, { ...latest, at: Date.now() }) } catch {} }
   const controller = {
     active: true, pluginId, dataDir, version: VERSION,
@@ -173,5 +201,5 @@ export function installNativeRetry({ dataDir, pluginId, pluginPid, leaseFile, se
   // that resolver, not just global fetch, so existing sessions are covered too.
   if (!transportPrototypes.length) globalThis.fetch = wrapped
   persist()
-  return { active: true, pid: process.pid, version: VERSION, reused: false, settingsFile }
+  return { active: true, pid: process.pid, version: VERSION, reused: false, settingsFile, ...startedAt === undefined ? {} : { startedAt } }
 }
