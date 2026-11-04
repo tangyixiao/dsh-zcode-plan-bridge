@@ -9,7 +9,9 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
 本仓库：<https://github.com/tangyixiao/dsh-zcode-plan-bridge> ·
 上游原版：<https://github.com/kyle123740/dsh-zcode-cli-proxy>（AGPL-3.0）
 
-## 适配版本（v0.5.x，双内核跟进）
+## 适配版本与验证范围
+
+当前源码版本为 `0.6.0-community.5`，npm `latest` 仍为稳定版 `0.5.2`。以下兼容和实测记录带有各自的版本及日期；声明的兼容范围不等于每个版本均已验收。当前 3.17.1 Start Plan 余额接口和 Retry 路径已做离线 fixture / 本地模拟测试，尚无该版本的 DSH 界面与真实账号生成验收。
 
 v0.5.2 修复取消后停止请求未发出、`session/stop` 通知被 CLI 忽略，以及正文 / reasoning 伪工具标签在跨 delta 和收尾批次中的泄漏。模型列表查询最多等待 15 秒，超时先显示备用清单；后台探测成功后，后续刷新使用真实清单。
 
@@ -280,7 +282,7 @@ v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 [liu5269/zcode2api](https://github.com/liu5269/zcode2api)，其代码已不再随本仓库分发。
 # 社区自动重试（可选）
 
-`0.6.0-community.2` 内附 ZCode Community Retry **0.3.0**：可在 ZCode 内安装、用户范围启用的非官方主聊天无限重试插件。使用原来的应用入口，在插件设置修改「重试间隔（秒）」，默认 5 秒。安装、版本限制和验收边界见 [community/README.md](community/README.md)。旧外部桌面启动器已撤回。
+桥接包当前内附 **0.3.2** 的 Retry 代码副本，供下方 DSH 可选接入使用；它不会随独立插件更新自动升级。独立 ZCode 插件现由 [zcode-community-retry](https://github.com/tangyixiao/zcode-community-retry) 仓库维护，当前已发布 **0.3.3**，请从该仓库的市场安装和更新，具体支持与验收边界以该仓库说明为准。本仓库的旧市场仍列出 0.3.2 和 Keeper 0.1.0，仅作为旧版入口，不会自动跟进独立仓库。旧外部桌面启动器已撤回。
 
 DSH 桥接中可单独选择启用，默认关闭：
 

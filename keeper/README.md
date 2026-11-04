@@ -1,5 +1,7 @@
 # ZCode Retry Keeper 0.1.0（非官方）
 
+本目录是桥接仓库保留的旧市场副本；独立插件的当前入口和更新见 [zcode-community-retry](https://github.com/tangyixiao/zcode-community-retry)。下文 0.3.2 是本旧市场的 Retry 版本，并非独立仓库最新版本。
+
 可选的用户范围配套插件。启用后，它在新建、恢复会话和提交提示词时检查当前 Windows ZCode Desktop 或 npm CLI Agent；如果 Community Retry 已关闭，Keeper 会恢复该宿主的 Retry 用户开关并为当前 Agent 接入重试。两个宿主的开关独立，需分别启用 Keeper。插件总开关关闭时不会自动打开，Keeper 也不会启用其他插件。
 
 从仓库根市场安装 `zcode-community-retry@tangyixiao-zcode-community` 0.3.2 与 `zcode-retry-keeper@tangyixiao-zcode-community` 0.1.0。在两个宿主各自的插件配置中，将 Keeper 的“当前宿主的设置文件绑定”配置为该宿主实际使用的绝对设置路径；然后在 Keeper 的用户数据目录 `plugins/data/zcode-retry-keeper@tangyixiao-zcode-community/` 写入 `bindings.json`，内容为：
