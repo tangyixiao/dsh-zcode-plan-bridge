@@ -1,5 +1,7 @@
 # ZCode Community Retry 0.3.2（非官方）
 
+本目录是桥接仓库内随包保留的 0.3.2 代码副本。独立插件的新版本和市场入口在 [zcode-community-retry 独立仓库](https://github.com/tangyixiao/zcode-community-retry)，当前已发布 0.3.3；更新独立插件不会改变桥接包内副本。以下是本副本的历史使用与验证说明。
+
 在 ZCode 内安装、启用的主聊天无限重试插件。默认每 5 秒重试，可在插件设置调整间隔；持续重试可恢复错误，直到成功、手动停止或收到终止错误。使用原来的 ZCode 快捷方式打开应用。
 
 ## 安装与使用
@@ -14,7 +16,7 @@
 
 0.3.1 增加运行时配置路径核验：原生接入调用已验证父 Agent 的纯函数 `getDefaultConfigPath()`，跟随该运行时实际使用的用户设置。Desktop 3.17.1 仍使用 `config.json`，npm CLI 3.17.1 使用独立的 `setting.json`；两者开关分别保留，不会按文件是否存在来切换、迁移文件或同步开关。CLI 停用并不表示 Desktop 停用。新 MCP helper 始终重新核对父 Agent 身份，不把旧状态文件中的活 PID 当成接入证明。无法唯一确定设置路径时，原生接入明确失败。
 
-GitHub 仓库根目录的 `marketplace.json` 包含 `community/` 和 `keeper/`。本改动位于工作分支/草稿 PR 时，应选择交付安装包或该分支的本地克隆；未合并的默认分支不包含本版。
+本桥接仓库根目录的旧 `marketplace.json` 包含 `community/` 和 `keeper/`，仍指向 0.3.2。新安装或更新请使用独立仓库市场；旧市场不会自动获得独立仓库的更新。
 
 旧版配套桌面启动器已撤回。请使用 ZCode 内的插件管理；不要运行旧的 `Start-ZCode-Retry.ps1`、CMD 或 `launch-desktop.mjs`。
 
@@ -51,4 +53,4 @@ communityRetry:
 
 从仓库根运行 `npm test` 和 `npm run typecheck`。真实 CLI/桌面 Agent 协议测试使用隔离配置与本地模拟上游，不需要真实账号：覆盖普通插件发现、主聊天连续 25 次失败后第 26 次成功、已有模型传输晚接入、界面配置协议、禁用/启用、终止错误和手动停止。协议验收不代表已经完成用户桌面界面点击或真实账号上游验收。
 
-源码与反馈：[tangyixiao/dsh-zcode-plan-bridge](https://github.com/tangyixiao/dsh-zcode-plan-bridge)。AGPL-3.0。此插件与 ZCode 官方没有从属关系。
+独立插件源码与反馈：[tangyixiao/zcode-community-retry](https://github.com/tangyixiao/zcode-community-retry)。桥接包内副本见 [dsh-zcode-plan-bridge](https://github.com/tangyixiao/dsh-zcode-plan-bridge)。AGPL-3.0。此插件与 ZCode 官方没有从属关系。
