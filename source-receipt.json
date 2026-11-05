@@ -2,10 +2,33 @@
   "repo": "tangyixiao/dsh-zcode-plan-bridge",
   "sourceBranch": "main",
   "sourceCommit": "1fd37af2ca49bd3e3964a7b2bca47b483d38abcd",
+  "designVersion": 3,
+  "direction": {
+    "visualConcept": "茄紫、银灰与紫罗兰端口构成的协议桥：首屏沿一条横向 stdio 流贯穿 DSH、桥和 app-server，标题贴着桥体左岸，真实事件名与版本边界沿下方铺开。与 WorkBuddy 的双接头和 HarnessHub 的抽屉明确不同。事实边界：使用 CLI 账号与其 app-server，模型清单来自 CLI；源码预览与 npm 稳定版不混写。",
+    "layout": "technical",
+    "palette": {
+      "light": {
+        "bg": "#E4DEED",
+        "surface": "#F4EFF8",
+        "ink": "#342343",
+        "muted": "#6e5b79",
+        "accent": "#74439b"
+      },
+      "dark": {
+        "bg": "#201527",
+        "surface": "#33213F",
+        "ink": "#F1E9F5",
+        "muted": "#bca4cb",
+        "accent": "#c896e9"
+      }
+    },
+    "threeConcept": "Three.js 创建哑光紫色的开放式双岸桥，消息以刻字的短片跨越中央导轨；只有用户逐步操作时移动 REQUEST / STREAM / CANCEL 说明片，图示不构造虚假的网络流量。",
+    "distinctiveInteraction": "逐步浏览请求、流式事件和取消三个真实协议阶段，点事件片可查看对应文档来源；版本按钮切换其各自兼容说明，避免一份说明覆盖所有版本。"
+  },
   "media": [],
   "skills": [
     "baoyu-design",
     "design-taste-frontend"
   ],
-  "design": "content-first source/product/photography; no rejected template or faux 3D"
+  "flagshipModel": null
 }

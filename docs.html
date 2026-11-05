@@ -1,45 +1,25 @@
-<!doctype html>
-<html lang="zh-CN" data-project="dsh-zcode-plan-bridge" data-docs="true"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dsh-zcode-plan-bridge · 使用文档</title><link rel="stylesheet" href="assets/system.css"><link rel="stylesheet" href="assets/ui/cards.css"><link rel="stylesheet" href="assets/motion/motion.css"><link rel="stylesheet" href="assets/layout/layout.css"><link rel="stylesheet" href="assets/fonts/fonts.css"><link rel="stylesheet" href="assets/page.css"><!-- <html lang="en" data-radius="sharp">; keep this <style> after the links: layout.css resets --ly-scale -->
-<style>
-:root {
-  --p-bg: #fafafa; --p-surface: #f0f1f3; --p-ink: #171717; --p-muted: #595959;
-  --p-accent: #1748ca; --p-accent-ink: #fafafa; --p-action: #1748ca; --p-action-ink: #fafafa;
-  --p-inv-bg: #171717; --p-inv-surface: #242424; --p-inv-ink: #fafafa; --p-inv-muted: #9b9b9b;
-  --p-inv-accent: #fafafa; --p-inv-accent-ink: #171717; --p-inv-action: #fafafa; --p-inv-action-ink: #171717;
-  --font-display: "Geist", system-ui, sans-serif;
-  --font-text: "Geist", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --display-weight: 500;
-  --display-tracking: -0.035em;
-  --display-tracking-xl: -0.045em;
-}
-</style><style>html[data-theme="light"]{--p-bg:#fafafa;--p-surface:#f0f1f3;--p-ink:#171717;--p-muted:#595959;--p-accent:#1748ca;--p-accent-ink:#ffffff;--p-action:#1748ca;--p-action-ink:#ffffff;color-scheme:light}html[data-theme="dark"]{--p-bg:#131517;--p-surface:#202427;--p-ink:#f0f1f2;--p-muted:#b5bbc1;--p-accent:#a4c2ff;--p-accent-ink:#131517;--p-action:#a4c2ff;--p-action-ink:#131517;color-scheme:dark}</style><script src="assets/theme.js"></script><link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/docs.css"></head><body class="docs-page">
-<header class="nav"><div class="wrap nav__bar"><a class="skip-link" href="#docs-content">跳到正文</a><a class="nav__logo" href="index.html#top">ZCode Plan Bridge</a><nav class="nav__links" aria-label="章节导航"><div class="nav__item"><a class="nav__link" href="index.html#work">项目内容</a></div><div class="nav__item"><a class="nav__link" href="docs.html">使用文档</a></div></nav><div class="nav__actions"><a class="btn btn--primary" href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">查看源码</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深浅色" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></div><button class="nav__toggle" type="button" aria-expanded="false" aria-label="菜单"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div></header>
-<main class="docs-shell wrap" id="top">
-<aside class="docs-sidebar" aria-label="文档导航">
-<a class="docs-home" href="index.html">← 返回项目首页</a>
-<details class="docs-toc" open><summary>README 目录</summary><nav aria-label="README 目录"><ol><li class="docs-level-1"><a href="#dsh-zcode-plan-bridge">dsh-zcode-plan-bridge</a></li><li class="docs-level-2"><a href="#适配版本与验证范围">适配版本与验证范围</a></li><li class="docs-level-2"><a href="#用法">用法</a></li><li class="docs-level-3"><a href="#zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐</a></li><li class="docs-level-3"><a href="#作者插件源">作者插件源</a></li><li class="docs-level-3"><a href="#dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」</a></li><li class="docs-level-2"><a href="#安全须知装之前必读">安全须知（装之前必读）</a></li><li class="docs-level-2"><a href="#通道原理全部实机逆向验证">通道原理（全部实机逆向验证）</a></li><li class="docs-level-2"><a href="#回合锁与自愈">回合锁与自愈</a></li><li class="docs-level-2"><a href="#诊断命令">诊断命令</a></li><li class="docs-level-2"><a href="#配置设置--插件">配置（设置 → 插件）</a></li><li class="docs-level-2"><a href="#开发">开发</a></li><li class="docs-level-2"><a href="#目录结构">目录结构</a></li><li class="docs-level-2"><a href="#许可">许可</a></li><li class="docs-level-1"><a href="#社区自动重试可选">社区自动重试（可选）</a></li></ol></nav></details>
-<div class="docs-resources"><p>源仓库资料</p><ul><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">原始 README</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/LICENSE">LICENSE</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/tree/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/docs">docs/</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases">发布记录 · GitHub Releases</a></li></ul></div>
-</aside>
-<div class="docs-main"><header class="docs-heading"><p class="docs-eyebrow">项目文档 · tangyixiao/dsh-zcode-plan-bridge</p>
-<h1>dsh-zcode-plan-bridge 使用文档</h1><p>以下正文来自源仓库 README。图片以原图链接保留。</p>
-<div class="docs-source"><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">在 GitHub 阅读原文</a><span>来源版本：<code>1fd37af2ca49</code></span></div></header>
-<article class="docs-markdown" id="docs-content" tabindex="-1"><h1 id="dsh-zcode-plan-bridge">dsh-zcode-plan-bridge</h1>
+<!doctype html><html lang="zh-CN" data-docs="v3" data-project="dsh-zcode-plan-bridge"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dsh-zcode-plan-bridge · 文档</title><link rel="stylesheet" href="assets/fonts/fonts.css"><link rel="stylesheet" href="assets/fonts/display.css"><link rel="stylesheet" href="assets/site.css"><link rel="stylesheet" href="assets/docs-v3.css"><link rel="stylesheet" href="assets/three/view3d.css"><link rel="stylesheet" href="assets/polish.css"><style>:root{--font-body:"Geist","PingFang SC","Microsoft YaHei",sans-serif;--font-text:var(--font-body);--model-accent:var(--accent);--font-display:"Space Grotesk","Songti SC","SimSun",serif;--font-mono:"Geist Mono","SFMono-Regular",Consolas,monospace}html[data-theme="light"]{--bg:#E4DEED;--surface:#F4EFF8;--ink:#342343;--muted:#6e5b79;--accent:#74439b;--accent-ink:#FFFFFF;--line:color-mix(in srgb,#342343 19%,transparent);color-scheme:light}html[data-theme="dark"]{--bg:#201527;--surface:#33213F;--ink:#F1E9F5;--muted:#bca4cb;--accent:#c896e9;--accent-ink:#000000;--line:color-mix(in srgb,#F1E9F5 19%,transparent);color-scheme:dark}</style><script src="assets/theme.js"></script><link rel="stylesheet" href="assets/docs-v3.css"></head>
+<body class="docs-page"><header class="nav site-nav"><div class="wrap nav-inner"><a class="skip-link" href="#docs-content">跳到正文</a><a class="site-brand" href="index.html">ZCode Plan Bridge</a><nav class="site-links" aria-label="项目导航"><a href="docs.html">使用文档</a><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">源代码</a></nav><div class="nav-controls"><a class="btn nav-cta" href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">查看源码</a><button class="site-theme" type="button" data-theme-toggle aria-label="切换深浅色" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button><button class="site-menu-toggle" data-menu-toggle type="button" aria-label="菜单" aria-expanded="false" aria-controls="site-drawer"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 6h14M3 14h14"/></svg></button></div></div><nav class="site-drawer" id="site-drawer" hidden><a href="index.html">项目首页</a><a href="docs.html">使用文档</a><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">查看源码</a><p class="drawer-note">ZCode Plan Bridge</p></nav></header><div class="docs-shell" id="top">
+<aside class="docs-sidebar"><a class="docs-back" href="index.html">← 项目首页</a>
+<details class="docs-toc" open><summary>本文目录</summary><nav aria-label="文档目录"><ol><li class="docs-level-1"><a href="#dsh-zcode-plan-bridge">dsh-zcode-plan-bridge</a></li><li class="docs-level-2"><a href="#适配版本与验证范围">适配版本与验证范围</a></li><li class="docs-level-2"><a href="#用法">用法</a></li><li class="docs-level-3"><a href="#zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐</a></li><li class="docs-level-3"><a href="#作者插件源">作者插件源</a></li><li class="docs-level-3"><a href="#dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」</a></li><li class="docs-level-2"><a href="#安全须知装之前必读">安全须知（装之前必读）</a></li><li class="docs-level-2"><a href="#通道原理全部实机逆向验证">通道原理（全部实机逆向验证）</a></li><li class="docs-level-2"><a href="#回合锁与自愈">回合锁与自愈</a></li><li class="docs-level-2"><a href="#诊断命令">诊断命令</a></li><li class="docs-level-2"><a href="#配置设置--插件">配置（设置 → 插件）</a></li><li class="docs-level-2"><a href="#开发">开发</a></li><li class="docs-level-2"><a href="#目录结构">目录结构</a></li><li class="docs-level-2"><a href="#许可">许可</a></li><li class="docs-level-1"><a href="#社区自动重试可选">社区自动重试（可选）</a></li></ol></nav></details>
+<div class="docs-resources"><h2>源仓库资料</h2><ul><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">原始 README</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/LICENSE">LICENSE</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/tree/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/docs">docs/</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases">GitHub Releases</a></li></ul></div></aside>
+<main class="docs-main"><header class="docs-intro"><p class="docs-eyebrow">DOCUMENTATION</p>
+<h1>dsh-zcode-plan-bridge</h1><p>源仓库 README</p><div class="docs-source"><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">GitHub 原文 ↗</a><code>1fd37af2ca49</code></div></header>
+<article class="docs-markdown" id="docs-content" tabindex="-1"><h1 id="dsh-zcode-plan-bridge">dsh-zcode-plan-bridge<a class="docs-heading-anchor" href="#dsh-zcode-plan-bridge" aria-label="此标题的固定链接">#</a></h1>
 <p>把 <strong>DeepSeek Harness（DSH）</strong> 的模型请求转交给 ZCode CLI 自带的 agent 执行的本地插件。</p>
 <p>provider <code>zcode-cli</code> 背后是一个常驻的 <code>zcode app-server</code> 会话（stdio JSON-RPC，真流式）。
 CLI 自己管着登录账号，插件只是把该账号能服务的模型清单原样转述给 DSH ——
 <strong>烧的是 ZCode 账号的额度，不需要 API Key，也不需要自建网关。</strong></p>
 <p>本仓库：<a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">https://github.com/tangyixiao/dsh-zcode-plan-bridge</a> ·
 上游原版：<a href="https://github.com/kyle123740/dsh-zcode-cli-proxy">https://github.com/kyle123740/dsh-zcode-cli-proxy</a>（AGPL-3.0）</p>
-<h2 id="适配版本与验证范围">适配版本与验证范围</h2>
+<h2 id="适配版本与验证范围">适配版本与验证范围<a class="docs-heading-anchor" href="#适配版本与验证范围" aria-label="此标题的固定链接">#</a></h2>
 <p>当前源码版本为 <code>0.6.0-community.5</code>，npm <code>latest</code> 仍为稳定版 <code>0.5.2</code>。以下兼容和实测记录带有各自的版本及日期；声明的兼容范围不等于每个版本均已验收。当前 3.17.1 Start Plan 余额接口和 Retry 路径已做离线 fixture / 本地模拟测试，尚无该版本的 DSH 界面与真实账号生成验收。</p>
 <p>v0.5.2 修复取消后停止请求未发出、<code>session/stop</code> 通知被 CLI 忽略，以及正文 / reasoning 伪工具标签在跨 delta 和收尾批次中的泄漏。模型列表查询最多等待 15 秒，超时先显示备用清单；后台探测成功后，后续刷新使用真实清单。</p>
 <p>v0.5.1 把 DSH 版本声明放到顶层 <code>engines.dsh</code>，供宿主和市场读取；v0.5.0 的嵌套 <code>dsh.engines.dsh</code> 不属于宿主读取的字段，实际通过 peer 依赖判断。兼容范围和模型转发行为保持不变。</p>
 <p>这个桥同时耦合两个内核，两边都要跟：</p>
-<table>
+<div class="docs-table-wrap" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>
 <thead>
 <tr>
 <th>内核</th>
@@ -59,7 +39,7 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
 <td><code>engines.dsh = &gt;=0.1.5 &lt;0.3.0-0 || ^0.1.5-rc.1 || ^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1</code>；cordis <code>&gt;=4.0.1 &lt;5.0.0</code>（4.0.5 实测）、schemastery <code>&gt;=3.18.1 &lt;4.0.0</code>（3.18.5 实测）</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>预发布 semver 很严：<code>&gt;=0.1.5-rc.1</code> 对 <code>0.2.1-rc.3</code> 求值是 <strong>false</strong>（只有带同一
 <code>major.minor.patch</code> 的比较项才接纳预发布），所以 peer 按线 caret 枚举，不写开区间。</p>
 <blockquote>
@@ -82,7 +62,7 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
 </ol>
 <p>通道逻辑（回合锁、自愈、事件流、图片物化）沿用上游的逆向结论并补了对应改造，版权归上游作者。</p>
 </blockquote>
-<pre><code>DSH Agent ──► provider &quot;zcode-cli&quot; ──► ZcodeAppServerAdapter
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">Plain text</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-text" data-language="text">DSH Agent ──► provider &quot;zcode-cli&quot; ──► ZcodeAppServerAdapter
                                             │  spawn zcode.cjs app-server --stdio（常驻）
                                             ├─ session/create    拿 settings.model.available（模型清单）
                                             ├─ session/subscribe  desktop-continuous 事件流
@@ -90,18 +70,16 @@ CLI 自己管着登录账号，插件只是把该账号能服务的模型清单�
                                             ├─ session/send      发回合（真流式）
                                             └─ interaction/requestProviderRuntimeHeaders  回 OAuth 鉴权
                                                   └──► zcode.z.ai/api/v1/zcode-plan/anthropic
-</code></pre>
-<h2 id="用法">用法</h2>
+</code></pre></div><h2 id="用法">用法<a class="docs-heading-anchor" href="#用法" aria-label="此标题的固定链接">#</a></h2>
 <p><strong>DSH Desktop 安装/更新</strong>：从本仓库的 GitHub Release 下载 <code>.tgz</code>，在「扩展 → 插件管理 → 添加插件」中选取本地文件。Desktop profile 由桌面应用管理。若已装有 <code>0.6.0-community.*</code> 预览版，请保留该版本；0.5.x 稳定线不包含该预览分支的无限重试功能，不能作为其原位升级。</p>
-<h3 id="zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐</h3>
+<h3 id="zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐<a class="docs-heading-anchor" href="#zcode-desktop-start-plan-套餐" aria-label="此标题的固定链接">#</a></h3>
 <p>CLI 的默认 standalone 模式使用 <strong>Individual Coding Plan</strong>，与桌面端的
 <strong>Start Plan</strong> 属于不同计费通道。桌面端显示 Start Plan 额度充足而桥接返回
 <code>1113</code> 时，应核对通道，不能据此要求充值。</p>
 <p>使用 npm 完整 CLI，并在插件配置中明确选择：</p>
-<pre><code class="language-yaml">accountMode: start-plan
-zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
-</code></pre>
-<p>该模式使用 CLI 原生 <code>ZCODE_APP_SERVER_AUTH_MODE=host</code>，从 ZCode 的
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">YAML</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-yaml" data-language="yaml"><span class="tok-nt">accountMode</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">start-plan</span>
+<span class="tok-nt">zcodeCliPath</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s">&#39;D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs&#39;</span>
+</code></pre></div><p>该模式使用 CLI 原生 <code>ZCODE_APP_SERVER_AUTH_MODE=host</code>，从 ZCode 的
 <code>billing/balance?app_version=&lt;当前内核版本&gt;</code> 读取当前账号有效授权，再通过 <code>provider/updateAccountConfig</code>
 配置 <code>account:zai-start-plan</code>。模型名来自服务端授权和当前内核的模型定义；
 鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
@@ -125,11 +103,11 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 <li>把本插件装进 DSH profile，重启 DSH。</li>
 <li>DSH 设置 → 模型（Models）→ 提供方 <strong>ZCode CLI (account bridge)</strong> → 选模型。</li>
 </ol>
-<h3 id="作者插件源">作者插件源</h3>
+<h3 id="作者插件源">作者插件源<a class="docs-heading-anchor" href="#作者插件源" aria-label="此标题的固定链接">#</a></h3>
 <p>作者插件源由独立仓库 <a href="https://github.com/tangyixiao/dsh-plugin-market">tangyixiao/dsh-plugin-market</a> 维护。
 计划使用的订阅地址为 <a href="https://tangyixiao.github.io/dsh-plugin-market/index.json">https://tangyixiao.github.io/dsh-plugin-market/index.json</a>；上线状态与订阅说明以该独立仓库为准。</p>
 <p>可用模型<strong>不是插件写死的</strong>，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：</p>
-<table>
+<div class="docs-table-wrap" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>
 <thead>
 <tr>
 <th>provider</th>
@@ -162,10 +140,10 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 <td>✓</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>3.15+ 的 builtin registry 还带了 <code>account:zai-highspeed-card</code> 等 HighSpeed 通道；清单里出现
 <code>account:</code> 前缀路由时插件仍然优先它（烧计划额度），<code>zai-api</code> 路由按 CLI 自己的计费口径走。</p>
-<h3 id="dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」</h3>
+<h3 id="dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」<a class="docs-heading-anchor" href="#dsh-rc3-一直显示正在加载模型" aria-label="此标题的固定链接">#</a></h3>
 <p>DSH <code>0.2.1-rc.3</code> 在支持范围内。模型选择器正在加载，并不表示宿主拒绝了插件版本：模型列表还要等待 ZCode CLI 启动和 <code>session/create</code> 返回。v0.5.1 及以前，这条路径默认可能等待约 130 秒；v0.5.2 为界面查询增加 15 秒上限，超时记录警告并返回备用清单，后台探测继续。备用清单只用于让界面可用，具体模型是否可用仍以 CLI 账号为准。</p>
 <ol>
 <li>在 DSH 插件管理中核对<strong>插件版本和安装来源</strong>。v0.5.1 曾只通过 GitHub Release / 市场发布，npm 默认版本当时仍为 v0.5.0；v0.5.2 已同步发布到 GitHub Release 和官方 npm registry。可用 <code>npm view dsh-zcode-plan-bridge version --registry=https://registry.npmjs.org</code> 核对 npm 当前版本。Desktop 用户也可从 <a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases">GitHub Releases</a> 下载已发布的 <code>.tgz</code>，再通过插件管理添加本地文件。</li>
@@ -182,7 +160,7 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 <li>会话标题这类辅助调用在本地生成，不消耗额度</li>
 <li>前置条件：本机能跑起 ZCode CLI，且它已登录有额度的账号</li>
 </ul>
-<h2 id="安全须知装之前必读">安全须知（装之前必读）</h2>
+<h2 id="安全须知装之前必读">安全须知（装之前必读）<a class="docs-heading-anchor" href="#安全须知装之前必读" aria-label="此标题的固定链接">#</a></h2>
 <p>这个「模型提供方」的真身是一个<strong>以你当前用户权限运行、且带全套工具执行能力的 agent</strong>。它不在 DSH 的工具权限边界内运行：DSH 的权限模式和浏览器审批界面只处理 DSH Host 自己发起的工具调用，不能确认 ZCode app-server 发起的授权请求；本插件也没有自己的交互式确认窗口。</p>
 <ul>
 <li>两种策略都会将会话设为 ZCode 的 <code>build</code> 权限模式，确保授权请求经过插件处理；模式设置失败时本轮停止。该策略不构成操作系统沙箱，也不阻止无需额外授权的 agent 操作。</li>
@@ -194,7 +172,7 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 DSH 宿主的全部 env；确有需要可用配置项 <code>childEnvAllow</code> 追加变量名。</li>
 <li>鉴权 token（<code>zcodejwttoken</code>）只经本机 stdio JSON-RPC 交给 agent 进程，不发往任何第三方。</li>
 </ul>
-<h2 id="通道原理全部实机逆向验证">通道原理（全部实机逆向验证）</h2>
+<h2 id="通道原理全部实机逆向验证">通道原理（全部实机逆向验证）<a class="docs-heading-anchor" href="#通道原理全部实机逆向验证" aria-label="此标题的固定链接">#</a></h2>
 <ol>
 <li>spawn <code>zcode app-server --surface terminal --no-color</code> 时<strong>不注入任何 <code>ZCODE_*</code></strong>。
 实测三种环境（零变量 / 只 <code>ZCODE_SERVICE_AUTHORITY_MODE</code> / 再加 <code>ZCODE_BASE_URL</code>）
@@ -223,7 +201,7 @@ DSH 宿主的全部 env；确有需要可用配置项 <code>childEnvAllow</code>
 <p>HTTP 直连计划端点会被无痕验证拦 —— 只有 agent 二进制自己发的签名请求能过，
 所以「反代」的形态是托管 agent 进程而不是自建 HTTP 网关。</p>
 </blockquote>
-<h2 id="回合锁与自愈">回合锁与自愈</h2>
+<h2 id="回合锁与自愈">回合锁与自愈<a class="docs-heading-anchor" href="#回合锁与自愈" aria-label="此标题的固定链接">#</a></h2>
 <p>app-server <strong>一个会话同时只允许一个在途回合</strong>。上一轮被中止 / 超时 / 静默丢弃时它不会自己释放，
 下一轮 <code>session/send</code> 就被拒成 <code>A prompt is already running for this session</code>。通道层做六件事兜底：</p>
 <ol>
@@ -238,16 +216,15 @@ DSH 侧编辑 / 回退过历史就重建会话、按首轮语义重放新分支�
 同一会话中途换模型时在原会话上重发 <code>session/setModel</code>，解析不出来就保留会话默认模型并记 warn。</li>
 </ol>
 <p>正文和 reasoning 各持有独立的流式过滤状态。可能的伪工具标签前缀暂存到能够判断后再发出，完整标签和跨 delta 的标签都会截断对应通道；收尾队列也走相同过滤。普通词语 <code>function_calls</code>、HTML 和大小比较保持原样。正文最终块与已发送的正文保持一致，避免收尾时重新带回被拦截的内容。</p>
-<h2 id="诊断命令">诊断命令</h2>
+<h2 id="诊断命令">诊断命令<a class="docs-heading-anchor" href="#诊断命令" aria-label="此标题的固定链接">#</a></h2>
 <p>插件带一个不依赖 DSH 宿主的诊断入口（只用 Node 内置模块，<strong>插件因版本不兼容加载失败时也能用</strong>）：</p>
-<pre><code>node bin/dsh-zcode-plan-bridge.js              # 列出子命令
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">Plain text</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-text" data-language="text">node bin/dsh-zcode-plan-bridge.js              # 列出子命令
 node bin/dsh-zcode-plan-bridge.js doctor       # 本地前置条件体检（离线，不耗额度）
 node bin/dsh-zcode-plan-bridge.js models       # 打印 CLI 上报的完整模型清单
 node bin/dsh-zcode-plan-bridge.js protocol     # 起 app-server 走一遍握手，验证协议没变
 node bin/dsh-zcode-plan-bridge.js turn &quot;hi&quot;    # 真发一个回合（消耗额度）
 node bin/dsh-zcode-plan-bridge.js image &lt;file&gt; # 发一张图（消耗额度）
-</code></pre>
-<p>通用参数：<code>--cli-path &lt;zcode.cjs&gt;</code>、<code>--data-dir &lt;~/.zcode 的上级&gt;</code>、<code>--model &lt;id&gt;</code>、<code>--json</code>、
+</code></pre></div><p>通用参数：<code>--cli-path &lt;zcode.cjs&gt;</code>、<code>--data-dir &lt;~/.zcode 的上级&gt;</code>、<code>--model &lt;id&gt;</code>、<code>--json</code>、
 <code>--allow-tools</code>。</p>
 <p><code>--allow-tools</code> 默认<strong>关闭</strong>，和插件本身的 <code>authorizationPolicy: deny</code> 一致。诊断命令会真的用你的
 账号起一个 app-server agent，所以不带这个 flag 时，探针会对 agent 的工具权限请求回 <code>deny</code>：
@@ -259,8 +236,8 @@ node bin/dsh-zcode-plan-bridge.js image &lt;file&gt; # 发一张图（消耗额�
 <p>这五个子命令取代了上游 <code>scripts/probe-*.cjs</code> 那十个一次性脚本。那些脚本各自硬编码了作者
 本机路径、改一次才能问另一个问题，已删除。</p>
 </blockquote>
-<h2 id="配置设置--插件">配置（设置 → 插件）</h2>
-<table>
+<h2 id="配置设置--插件">配置（设置 → 插件）<a class="docs-heading-anchor" href="#配置设置--插件" aria-label="此标题的固定链接">#</a></h2>
+<div class="docs-table-wrap" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>
 <thead>
 <tr>
 <th>字段</th>
@@ -330,22 +307,20 @@ node bin/dsh-zcode-plan-bridge.js image &lt;file&gt; # 发一张图（消耗额�
 <td>仅作兜底：CLI 未上报 <code>contextWindow</code> 时使用</td>
 </tr>
 </tbody>
-</table>
-<h2 id="开发">开发</h2>
-<pre><code class="language-bash">npm test           # 纯函数单测（不 spawn CLI、不耗额度）
-npm run typecheck  # tsc --checkJs 全量类型校验（零构建，装进 profile 免编译）
-npm run diagnose   # 诊断命令入口
-</code></pre>
-<p><strong>改了代码怎么生效</strong>：DSH 的 loader 只在<strong>行 name 变化</strong>时重新 import 插件模块，
+</table></div>
+<h2 id="开发">开发<a class="docs-heading-anchor" href="#开发" aria-label="此标题的固定链接">#</a></h2>
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">Bash</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-bash" data-language="bash">npm<span class="tok-w"> </span><span class="tok-nb">test</span><span class="tok-w">           </span><span class="tok-c1"># 纯函数单测（不 spawn CLI、不耗额度）</span>
+npm<span class="tok-w"> </span>run<span class="tok-w"> </span>typecheck<span class="tok-w">  </span><span class="tok-c1"># tsc --checkJs 全量类型校验（零构建，装进 profile 免编译）</span>
+npm<span class="tok-w"> </span>run<span class="tok-w"> </span>diagnose<span class="tok-w">   </span><span class="tok-c1"># 诊断命令入口</span>
+</code></pre></div><p><strong>改了代码怎么生效</strong>：DSH 的 loader 只在<strong>行 name 变化</strong>时重新 import 插件模块，
 而 Node ESM 以完整 URL（含查询串）为缓存键。仓库里的 <code>cordis.patch.yml</code> 写的是包名
 （npm / link: 装配的正确形态）；本地目录式开发装配时把它换成 file:// URL 加 <code>?v=N</code>：</p>
-<pre><code class="language-yaml">- insert:
-    - id: dsh-zcode-plan-bridge
-      name: 'file:///D:/path/to/dsh-zcode-plan-bridge/lib/index.js?v=N'
-</code></pre>
-<p>改完 <code>lib/*.js</code> 后把 <code>?v=N</code> 递增，然后在插件管理里对 bundle <strong>禁用 → 启用</strong>（或重启 DSH）。</p>
-<h2 id="目录结构">目录结构</h2>
-<pre><code>lib/index.js        插件装配：Config schema、provider 注册、模型清单来源决策
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">YAML</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-yaml" data-language="yaml"><span class="tok-p tok-p-Indicator">-</span><span class="tok-w"> </span><span class="tok-nt">insert</span><span class="tok-p">:</span>
+<span class="tok-w">    </span><span class="tok-p tok-p-Indicator">-</span><span class="tok-w"> </span><span class="tok-nt">id</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">dsh-zcode-plan-bridge</span>
+<span class="tok-w">      </span><span class="tok-nt">name</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s">&#39;file:///D:/path/to/dsh-zcode-plan-bridge/lib/index.js?v=N&#39;</span>
+</code></pre></div><p>改完 <code>lib/*.js</code> 后把 <code>?v=N</code> 递增，然后在插件管理里对 bundle <strong>禁用 → 启用</strong>（或重启 DSH）。</p>
+<h2 id="目录结构">目录结构<a class="docs-heading-anchor" href="#目录结构" aria-label="此标题的固定链接">#</a></h2>
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">Plain text</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-text" data-language="text">lib/index.js        插件装配：Config schema、provider 注册、模型清单来源决策
 lib/app-server.js   app-server 通道：JSON-RPC 客户端 + LlmAdapter（事件流/回合锁/鉴权）
 lib/zcode-runtime.js CLI 发现、catalogue 归一化与路由选择（只用 Node 内置模块）
 lib/messages.js     消息工具：图片物化、对话拍平、泄漏工具调用清洗
@@ -353,22 +328,19 @@ lib/credentials.js  解密 ~/.zcode/v2/credentials.json
 lib/diagnostics.js  五个诊断子命令（doctor/models/protocol/turn/image）
 bin/                可执行入口
 test/               纯函数单测（node --test）
-</code></pre>
-<h2 id="许可">许可</h2>
+</code></pre></div><h2 id="许可">许可<a class="docs-heading-anchor" href="#许可" aria-label="此标题的固定链接">#</a></h2>
 <p>AGPL-3.0。本仓库是 <a href="https://github.com/kyle123740/dsh-zcode-cli-proxy">kyle123740/dsh-zcode-cli-proxy</a>
 的衍生版：app-server 通道的逆向结论（回合锁、事件流、鉴权回调）源自上游，
 v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
 <a href="https://github.com/liu5269/zcode2api">liu5269/zcode2api</a>，其代码已不再随本仓库分发。</p>
-<h1 id="社区自动重试可选">社区自动重试（可选）</h1>
+<h1 id="社区自动重试可选">社区自动重试（可选）<a class="docs-heading-anchor" href="#社区自动重试可选" aria-label="此标题的固定链接">#</a></h1>
 <p>桥接包当前内附 <strong>0.3.2</strong> 的 Retry 代码副本，供下方 DSH 可选接入使用；它不会随独立插件更新自动升级。独立 ZCode 插件现由 <a href="https://github.com/tangyixiao/zcode-community-retry">zcode-community-retry</a> 仓库维护，当前已发布 <strong>0.3.3</strong>，请从该仓库的市场安装和更新，具体支持与验收边界以该仓库说明为准。本仓库的旧市场仍列出 0.3.2 和 Keeper 0.1.0，仅作为旧版入口，不会自动跟进独立仓库。旧外部桌面启动器已撤回。</p>
 <p>DSH 桥接中可单独选择启用，默认关闭：</p>
-<pre><code class="language-yaml">communityRetry:
-  enabled: true
-  mode: unlimited
-  intervalMs: 10000  # 每 10 秒重试一次
-</code></pre>
-<p>开启后由社区模块统一管理物理请求重试，关闭原生及 DSH 外层重试。无限模式无次数和累计恢复时长上限，且取消桥接自身 15 分钟回合超时；调用方取消仍优先，<code>session/stop</code> 使用有响应的请求。已有桥接子进程保持原配置，下次创建才生效。</p>
+<div class="docs-code" data-code-block><div class="docs-code-toolbar"><span class="docs-code-language">YAML</span><button class="docs-code-copy" type="button" data-copy-code aria-label="复制代码">复制</button><span class="docs-copy-status" role="status" aria-live="polite"></span></div><pre tabindex="0"><code class="highlight language-yaml" data-language="yaml"><span class="tok-nt">communityRetry</span><span class="tok-p">:</span>
+<span class="tok-w">  </span><span class="tok-nt">enabled</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">true</span>
+<span class="tok-w">  </span><span class="tok-nt">mode</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">unlimited</span>
+<span class="tok-w">  </span><span class="tok-nt">intervalMs</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10000</span><span class="tok-w">  </span><span class="tok-c1"># 每 10 秒重试一次</span>
+</code></pre></div><p>开启后由社区模块统一管理物理请求重试，关闭原生及 DSH 外层重试。无限模式无次数和累计恢复时长上限，且取消桥接自身 15 分钟回合超时；调用方取消仍优先，<code>session/stop</code> 使用有响应的请求。已有桥接子进程保持原配置，下次创建才生效。</p>
 <p>并发限制、临时网络失败、限流和暂时服务端错误会持续重试，直到成功或取消。1113、认证失败、长期额度和模型权限错误直接返回。有效输出后的中断不重放请求，整个会话与工具不会被重新提交。默认只管理 ZCode/Z.AI/BigModel 推理请求，自定义模型服务需在 <code>allowedOrigins</code> 明确列出 origin。DSH 另支持 <code>mode: bounded</code> 和较大的 <code>maxRetries</code>，该模式仍遵守 <code>budgetMs</code>。</p>
 </article>
-</div></main><footer class="docs-footer wrap"><a href="index.html">返回首页</a><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">GitHub 源仓库</a></footer>
-<script type="module" src="assets/system.js"></script></body></html>
+</main></div><footer class="docs-footer"><a href="index.html">返回首页</a><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">GitHub 源仓库</a></footer><script src="assets/docs-v3.js" defer></script><script src="assets/site.js" defer></script></body></html>
