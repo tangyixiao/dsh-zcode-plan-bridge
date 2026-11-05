@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="zh-CN" data-project="dsh-zcode-plan-bridge" data-docs="true"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh-zcode-plan-bridge · 使用文档</title><link rel="stylesheet" href="assets/system.css"><link rel="stylesheet" href="assets/ui/cards.css"><link rel="stylesheet" href="assets/motion/motion.css"><link rel="stylesheet" href="assets/layout/layout.css"><link rel="stylesheet" href="assets/page.css"><!-- <html lang="en" data-radius="sharp">; keep this <style> after the links: layout.css resets --ly-scale -->
+<style>
+:root {
+  --p-bg: #fafafa; --p-surface: #f0f1f3; --p-ink: #171717; --p-muted: #595959;
+  --p-accent: #1748ca; --p-accent-ink: #fafafa; --p-action: #1748ca; --p-action-ink: #fafafa;
+  --p-inv-bg: #171717; --p-inv-surface: #242424; --p-inv-ink: #fafafa; --p-inv-muted: #9b9b9b;
+  --p-inv-accent: #fafafa; --p-inv-accent-ink: #171717; --p-inv-action: #fafafa; --p-inv-action-ink: #171717;
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-text: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.045em;
+}
+</style><style>html[data-theme="light"]{--p-bg:#fafafa;--p-surface:#f0f1f3;--p-ink:#171717;--p-muted:#595959;--p-accent:#1748ca;--p-accent-ink:#ffffff;--p-action:#1748ca;--p-action-ink:#ffffff;color-scheme:light}html[data-theme="dark"]{--p-bg:#131517;--p-surface:#202427;--p-ink:#f0f1f2;--p-muted:#b5bbc1;--p-accent:#a4c2ff;--p-accent-ink:#131517;--p-action:#a4c2ff;--p-action-ink:#131517;color-scheme:dark}</style><script src="assets/theme.js"></script><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/docs.css"></head><body class="docs-page">
+<header class="nav"><div class="wrap nav__bar"><a class="skip-link" href="#docs-content">跳到正文</a><a class="nav__logo" href="index.html#top">ZCode Plan Bridge</a><nav class="nav__links" aria-label="章节导航"><div class="nav__item"><a class="nav__link" href="index.html#work">项目内容</a></div><div class="nav__item"><a class="nav__link" href="docs.html">使用文档</a></div></nav><div class="nav__actions"><a class="btn btn--primary" href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">查看源码</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深浅色" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></div><button class="nav__toggle" type="button" aria-expanded="false" aria-label="菜单"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div></header>
+<main class="docs-shell wrap" id="top">
+<aside class="docs-sidebar" aria-label="文档导航">
+<a class="docs-home" href="index.html">← 返回项目首页</a>
+<details class="docs-toc" open><summary>README 目录</summary><nav aria-label="README 目录"><ol><li class="docs-level-1"><a href="#dsh-zcode-plan-bridge">dsh-zcode-plan-bridge</a></li><li class="docs-level-2"><a href="#适配版本与验证范围">适配版本与验证范围</a></li><li class="docs-level-2"><a href="#用法">用法</a></li><li class="docs-level-3"><a href="#zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐</a></li><li class="docs-level-3"><a href="#作者插件源">作者插件源</a></li><li class="docs-level-3"><a href="#dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」</a></li><li class="docs-level-2"><a href="#安全须知装之前必读">安全须知（装之前必读）</a></li><li class="docs-level-2"><a href="#通道原理全部实机逆向验证">通道原理（全部实机逆向验证）</a></li><li class="docs-level-2"><a href="#回合锁与自愈">回合锁与自愈</a></li><li class="docs-level-2"><a href="#诊断命令">诊断命令</a></li><li class="docs-level-2"><a href="#配置设置--插件">配置（设置 → 插件）</a></li><li class="docs-level-2"><a href="#开发">开发</a></li><li class="docs-level-2"><a href="#目录结构">目录结构</a></li><li class="docs-level-2"><a href="#许可">许可</a></li><li class="docs-level-1"><a href="#社区自动重试可选">社区自动重试（可选）</a></li></ol></nav></details>
+<div class="docs-resources"><p>源仓库资料</p><ul><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">原始 README</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/LICENSE">LICENSE</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/tree/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/docs">docs/</a></li><li><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases">发布记录 · GitHub Releases</a></li></ul></div>
+</aside>
+<div class="docs-main"><header class="docs-heading"><p class="docs-eyebrow">项目文档 · tangyixiao/dsh-zcode-plan-bridge</p>
+<h1>dsh-zcode-plan-bridge 使用文档</h1><p>以下正文来自源仓库 README。图片以原图链接保留。</p>
+<div class="docs-source"><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/blob/1fd37af2ca49bd3e3964a7b2bca47b483d38abcd/README.md">在 GitHub 阅读原文</a><span>来源版本：<code>1fd37af2ca49</code></span></div></header>
+<article class="docs-markdown" id="docs-content" tabindex="-1"><h1 id="dsh-zcode-plan-bridge">dsh-zcode-plan-bridge</h1>
+<p>把 <strong>DeepSeek Harness（DSH）</strong> 的模型请求转交给 ZCode CLI 自带的 agent 执行的本地插件。</p>
+<p>provider <code>zcode-cli</code> 背后是一个常驻的 <code>zcode app-server</code> 会话（stdio JSON-RPC，真流式）。
+CLI 自己管着登录账号，插件只是把该账号能服务的模型清单原样转述给 DSH ——
+<strong>烧的是 ZCode 账号的额度，不需要 API Key，也不需要自建网关。</strong></p>
+<p>本仓库：<a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">https://github.com/tangyixiao/dsh-zcode-plan-bridge</a> ·
+上游原版：<a href="https://github.com/kyle123740/dsh-zcode-cli-proxy">https://github.com/kyle123740/dsh-zcode-cli-proxy</a>（AGPL-3.0）</p>
+<h2 id="适配版本与验证范围">适配版本与验证范围</h2>
+<p>当前源码版本为 <code>0.6.0-community.5</code>，npm <code>latest</code> 仍为稳定版 <code>0.5.2</code>。以下兼容和实测记录带有各自的版本及日期；声明的兼容范围不等于每个版本均已验收。当前 3.17.1 Start Plan 余额接口和 Retry 路径已做离线 fixture / 本地模拟测试，尚无该版本的 DSH 界面与真实账号生成验收。</p>
+<p>v0.5.2 修复取消后停止请求未发出、<code>session/stop</code> 通知被 CLI 忽略，以及正文 / reasoning 伪工具标签在跨 delta 和收尾批次中的泄漏。模型列表查询最多等待 15 秒，超时先显示备用清单；后台探测成功后，后续刷新使用真实清单。</p>
+<p>v0.5.1 把 DSH 版本声明放到顶层 <code>engines.dsh</code>，供宿主和市场读取；v0.5.0 的嵌套 <code>dsh.engines.dsh</code> 不属于宿主读取的字段，实际通过 peer 依赖判断。兼容范围和模型转发行为保持不变。</p>
+<p>这个桥同时耦合两个内核，两边都要跟：</p>
+<table>
+<thead>
+<tr>
+<th>内核</th>
+<th>实测通过</th>
+<th>声明范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ZCode CLI</strong>（<code>zcode-app-cli</code> / 桌面端 builtin）</td>
+<td><strong>3.16.3</strong>（npm <code>3.16.3-39</code>，2026-10-24）；通道方法 73→99 零删除、事件枚举不变、<code>approvalMode:&quot;user-once&quot;</code> 已适配</td>
+<td>无硬性下限，但 <strong>3.14.x 与升级后的桌面端共存会启动即崩</strong>（桌面写出的新 builtin 老内核解不了，#207），建议 ≥ 3.15.3</td>
+</tr>
+<tr>
+<td><strong>DSH 宿主</strong>（<code>@deepseek-ai/dsh-llm</code> 线）</td>
+<td>0.2.1-rc.3（2026-10-23，devDeps 即此版）</td>
+<td><code>engines.dsh = &gt;=0.1.5 &lt;0.3.0-0 || ^0.1.5-rc.1 || ^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1</code>；cordis <code>&gt;=4.0.1 &lt;5.0.0</code>（4.0.5 实测）、schemastery <code>&gt;=3.18.1 &lt;4.0.0</code>（3.18.5 实测）</td>
+</tr>
+</tbody>
+</table>
+<p>预发布 semver 很严：<code>&gt;=0.1.5-rc.1</code> 对 <code>0.2.1-rc.3</code> 求值是 <strong>false</strong>（只有带同一
+<code>major.minor.patch</code> 的比较项才接纳预发布），所以 peer 按线 caret 枚举，不写开区间。</p>
+<blockquote>
+<p><strong>与上游 0.3.x 的差异（v0.4.x 起基于实机逆向重写通道层；v0.5.x 跟进双内核升级）</strong></p>
+<p>上游假定「DSH 侧注入 Start Plan 账户 + 硬编码模型清单」，实测在 npm 版 CLI
+（<code>zcode-app-cli</code>）上这两条都错：</p>
+<ol>
+<li><strong>CLI 处于 standalone 模式，拒绝宿主注入</strong>。<code>provider/updateAccountConfig</code> 直接回
+<code>Error: Standalone Account 由本进程管理，不接收 Host 覆盖</code>。账号本来就被 CLI 自己管着，
+注入既不可能也没必要 —— 已删除。</li>
+<li><strong>同时设 <code>ZCODE_BUILTIN_PROVIDER_CONFIG_FILE</code> 与 <code>ZCODE_PERSONAL_PROVIDER_CONFIG_FILE</code>
+会让 CLI 直接起不来</strong>，stderr 固定为 <code>Error: Bundled 与 Active ZCode Built-in Release 均不可用</code>，
+而且不服务任何请求。桌面客户端写出的 builtin <code>revision</code> 一旦超过当前 CLI 能解的 schema，
+就必然踩中。已彻底不再注入任何 <code>ZCODE_*</code> 环境变量。</li>
+<li><strong>模型清单改为读 CLI 上报</strong>。<code>session/create</code> 的 <code>settings.model.available</code> 是权威清单；
+上游硬编码的 <code>200000 / 64000 / [FALLBACK_MODELS]</code> 与实机差 5 倍（真实
+<code>contextWindow=1000000</code>、<code>maxOutputTokens=128000</code>），provider id 也不同。</li>
+<li><strong>provider id 不再硬编码</strong>。上游写死 <code>account:zai-start-plan</code>，但 standalone 下该 provider
+不进入 registry；实机是 <code>account:zai-individual-coding-plan</code>。</li>
+</ol>
+<p>通道逻辑（回合锁、自愈、事件流、图片物化）沿用上游的逆向结论并补了对应改造，版权归上游作者。</p>
+</blockquote>
+<pre><code>DSH Agent ──► provider &quot;zcode-cli&quot; ──► ZcodeAppServerAdapter
+                                            │  spawn zcode.cjs app-server --stdio（常驻）
+                                            ├─ session/create    拿 settings.model.available（模型清单）
+                                            ├─ session/subscribe  desktop-continuous 事件流
+                                            ├─ session/setModel   仅在目标模型与当前不同时切换
+                                            ├─ session/send      发回合（真流式）
+                                            └─ interaction/requestProviderRuntimeHeaders  回 OAuth 鉴权
+                                                  └──► zcode.z.ai/api/v1/zcode-plan/anthropic
+</code></pre>
+<h2 id="用法">用法</h2>
+<p><strong>DSH Desktop 安装/更新</strong>：从本仓库的 GitHub Release 下载 <code>.tgz</code>，在「扩展 → 插件管理 → 添加插件」中选取本地文件。Desktop profile 由桌面应用管理。若已装有 <code>0.6.0-community.*</code> 预览版，请保留该版本；0.5.x 稳定线不包含该预览分支的无限重试功能，不能作为其原位升级。</p>
+<h3 id="zcode-desktop-start-plan-套餐">ZCode Desktop Start Plan 套餐</h3>
+<p>CLI 的默认 standalone 模式使用 <strong>Individual Coding Plan</strong>，与桌面端的
+<strong>Start Plan</strong> 属于不同计费通道。桌面端显示 Start Plan 额度充足而桥接返回
+<code>1113</code> 时，应核对通道，不能据此要求充值。</p>
+<p>使用 npm 完整 CLI，并在插件配置中明确选择：</p>
+<pre><code class="language-yaml">accountMode: start-plan
+zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
+</code></pre>
+<p>该模式使用 CLI 原生 <code>ZCODE_APP_SERVER_AUTH_MODE=host</code>，从 ZCode 的
+<code>billing/balance?app_version=&lt;当前内核版本&gt;</code> 读取当前账号有效授权，再通过 <code>provider/updateAccountConfig</code>
+配置 <code>account:zai-start-plan</code>。模型名来自服务端授权和当前内核的模型定义；
+鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
+桌面端或终端 CLI 的共享默认模型。授权获取失败时直接报错，不回退到 Coding Plan。</p>
+<p><code>0.6.0-community.4</code> 改用 3.17.1 实际使用的 balance 接口；已弃用的
+<code>billing/current</code> 可能返回 HTTP 200 / code 0 的空对象，不能据此认定账号没有套餐。
+请求仅使用同一 ZCode 数据根目录下现有的 <code>.zcode/v2/telemetry-state.json.deviceMid</code>，
+不会生成或改写设备标识。缺少合法设备标识、查询失败和没有有效授权分别报错。
+模型从当前余额桶的 capabilities / show_name 与内核定义取交集，并核对套餐实例、
+权益归属和生效/到期时间；当前 balances 为空时不沿用旧模型名单。
+仅为旧响应兼容保留无 balances 字段时的套餐权益解析；不会因此回退到付费套餐。</p>
+<p>本机 2026-10-25 已验证 GLM-5.3 通过
+<code>https://zcode.z.ai/api/v1/zcode-plan/anthropic</code> 返回 <code>OK</code>。
+未选择该模式时，原有 standalone 行为保持不变。</p>
+<p><code>user concurrency limit exceeded</code> / <code>model concurrency limit exceeded</code> 表示
+服务端并发已满，与套餐余额错误 <code>1113</code> 不同。插件把这两类临时错误报告为
+<code>RATE_LIMIT</code>，由 DSH 的有界、可取消重试策略退避等待。其他客户端的请求也会
+占用同一账号的服务端并发；重试不能增加服务器配额。</p>
+<ol>
+<li>装一份 ZCode CLI（<code>npm i -g zcode-app-cli</code>，或桌面客户端自带的 <code>zcode.cjs</code>），并登录有额度的账号。装了桌面端的注意：<strong>保持 npm 全局包跟着桌面端一起升级</strong>——桌面升级后会在 <code>~/.zcode/v2</code> 写入新版 builtin，老 CLI（&lt;3.15.3）解析不了会在服务任何请求前直接退出。探测自动在多份内核里选版本最新的一份。</li>
+<li>把本插件装进 DSH profile，重启 DSH。</li>
+<li>DSH 设置 → 模型（Models）→ 提供方 <strong>ZCode CLI (account bridge)</strong> → 选模型。</li>
+</ol>
+<h3 id="作者插件源">作者插件源</h3>
+<p>作者插件源由独立仓库 <a href="https://github.com/tangyixiao/dsh-plugin-market">tangyixiao/dsh-plugin-market</a> 维护。
+计划使用的订阅地址为 <a href="https://tangyixiao.github.io/dsh-plugin-market/index.json">https://tangyixiao.github.io/dsh-plugin-market/index.json</a>；上线状态与订阅说明以该独立仓库为准。</p>
+<p>可用模型<strong>不是插件写死的</strong>，而是 CLI 当前账号能服务的那批。本机实测（2026-10-24，内核 3.16.3）：</p>
+<table>
+<thead>
+<tr>
+<th>provider</th>
+<th>model</th>
+<th>context</th>
+<th>max output</th>
+<th>image</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zai-api</code></td>
+<td>GLM-5.3</td>
+<td>1000000</td>
+<td>128000</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>zai-api</code></td>
+<td>GLM-5.3-Flash</td>
+<td>1000000</td>
+<td>128000</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>ccc6dfb9-…</code>（个人 deepseek）</td>
+<td>deepseek-v4-flash</td>
+<td>1000000</td>
+<td>384000</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>3.15+ 的 builtin registry 还带了 <code>account:zai-highspeed-card</code> 等 HighSpeed 通道；清单里出现
+<code>account:</code> 前缀路由时插件仍然优先它（烧计划额度），<code>zai-api</code> 路由按 CLI 自己的计费口径走。</p>
+<h3 id="dsh-rc3-一直显示正在加载模型">DSH rc.3 一直显示「正在加载模型」</h3>
+<p>DSH <code>0.2.1-rc.3</code> 在支持范围内。模型选择器正在加载，并不表示宿主拒绝了插件版本：模型列表还要等待 ZCode CLI 启动和 <code>session/create</code> 返回。v0.5.1 及以前，这条路径默认可能等待约 130 秒；v0.5.2 为界面查询增加 15 秒上限，超时记录警告并返回备用清单，后台探测继续。备用清单只用于让界面可用，具体模型是否可用仍以 CLI 账号为准。</p>
+<ol>
+<li>在 DSH 插件管理中核对<strong>插件版本和安装来源</strong>。v0.5.1 曾只通过 GitHub Release / 市场发布，npm 默认版本当时仍为 v0.5.0；v0.5.2 已同步发布到 GitHub Release 和官方 npm registry。可用 <code>npm view dsh-zcode-plan-bridge version --registry=https://registry.npmjs.org</code> 核对 npm 当前版本。Desktop 用户也可从 <a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases">GitHub Releases</a> 下载已发布的 <code>.tgz</code>，再通过插件管理添加本地文件。</li>
+<li>在实际使用的插件目录运行 <code>node bin/dsh-zcode-plan-bridge.js doctor --json</code> 和 <code>node bin/dsh-zcode-plan-bridge.js models --json</code>。这两条命令不发送生成回合。核对诊断输出中的 <code>zcode.cjs</code> 路径；显式配置的 <code>zcodeCliPath</code> 会覆盖自动探测，旧路径需要更新。账号状态和可用模型可先在 ZCode 本身确认。</li>
+<li>如果 <code>models</code> 能成功返回而 DSH 仍持续加载，记录插件、DSH、ZCode CLI 版本、加载持续时间，以及 DSH 日志中的 <code>zcode:</code>、<code>app-server exited</code>、<code>could not read the CLI model catalogue</code> 等相关信息。提交 issue 时附诊断结果即可，不需要提供凭证文件。</li>
+</ol>
+<p>Issue #5 的截图没有错误信息、等待时间或诊断日志，无法据此确定报告者卡住的具体原因。这里的等待上限、探测会话清理和安装来源核对均有独立验证，不代表已在报告者环境复现。</p>
+<p>同一 model id 出现在多个 provider 上时，插件<strong>优先 <code>account:</code> 开头的路由</strong>（烧计划额度），
+其余按 CLI 上报顺序取第一条；想指定确切路由，就在 <code>cliModels</code> 里给条目写
+<code>id: &quot;zai-api/GLM-5.3&quot;</code>（<code>providerId/modelId</code> 形式）。</p>
+<ul>
+<li>真流式（text/reasoning delta 直接转发）、工具调用、图片输入（图片以本地文件随消息附上，agent 用 Read 读图）</li>
+<li>多轮会话按 DSH 的 sessionId 复用 app-server 会话</li>
+<li>会话标题这类辅助调用在本地生成，不消耗额度</li>
+<li>前置条件：本机能跑起 ZCode CLI，且它已登录有额度的账号</li>
+</ul>
+<h2 id="安全须知装之前必读">安全须知（装之前必读）</h2>
+<p>这个「模型提供方」的真身是一个<strong>以你当前用户权限运行、且带全套工具执行能力的 agent</strong>。它不在 DSH 的工具权限边界内运行：DSH 的权限模式和浏览器审批界面只处理 DSH Host 自己发起的工具调用，不能确认 ZCode app-server 发起的授权请求；本插件也没有自己的交互式确认窗口。</p>
+<ul>
+<li>两种策略都会将会话设为 ZCode 的 <code>build</code> 权限模式，确保授权请求经过插件处理；模式设置失败时本轮停止。该策略不构成操作系统沙箱，也不阻止无需额外授权的 agent 操作。</li>
+<li>默认 <code>authorizationPolicy: deny</code>：插件对 <code>interaction/requestPermission</code> 回复 <code>deny</code>，不会弹确认框；需要授权的工具调用会失败。</li>
+<li>3.15+ 内核的权限请求可能带 <code>approvalMode:&quot;user-once&quot;</code>（不允许附带持久化规则）；插件只回裸 <code>decision</code>，两种策略下都满足该模式。出现<strong>未识别的 <code>approvalMode</code> 或权限类方法名时始终 fail-closed 拒绝</strong>，即使启用了全自动模式；如果 ZCode 将来改变权限协议，相关调用会失败关闭。</li>
+<li>只有显式设置 <code>authorizationPolicy: allow-all</code> 才会自动批准已知的 <code>interaction/requestPermission</code> 请求。该设置允许 agent 以当前用户权限执行 Bash、文件读写和联网操作，不要在不可信任务中启用。</li>
+<li>agent 的输入是 DSH 拍平后的整段对话（包括网页抓取、工具结果等外部内容）。提示注入仍可能诱导全自动模式执行恶意操作；默认拒绝减少了授权面，但不能消除未经过授权请求的副作用。</li>
+<li>子进程环境变量按白名单透传（系统基础变量、<code>ZCODE_*</code>、<code>NODE_EXTRA_CA_CERTS</code>），不继承
+DSH 宿主的全部 env；确有需要可用配置项 <code>childEnvAllow</code> 追加变量名。</li>
+<li>鉴权 token（<code>zcodejwttoken</code>）只经本机 stdio JSON-RPC 交给 agent 进程，不发往任何第三方。</li>
+</ul>
+<h2 id="通道原理全部实机逆向验证">通道原理（全部实机逆向验证）</h2>
+<ol>
+<li>spawn <code>zcode app-server --surface terminal --no-color</code> 时<strong>不注入任何 <code>ZCODE_*</code></strong>。
+实测三种环境（零变量 / 只 <code>ZCODE_SERVICE_AUTHORITY_MODE</code> / 再加 <code>ZCODE_BASE_URL</code>）
+产出的模型清单<strong>完全相同</strong>；而注入 builtin/personal 文件路径会引入上面说的启动失败。</li>
+<li><code>session/create</code> 的返回里 <code>settings.model.available</code> 是模型清单，<code>session.model</code> 是当前模型。
+条目形状：<code>{ref:{providerId,modelId}, label, providerLabel, contextWindow, maxOutputTokens, reasoning:{levels:[{value}],defaultLevel}, properties:{inputFormat:{supportsImage}}}</code> ——
+<strong>没有</strong> <code>inputModalities</code> 字段，图片能力要看 <code>properties.inputFormat.supportsImage</code>。</li>
+<li><code>session/subscribe</code> 用 <code>{deliveryKind:'desktop-continuous', afterSeq:0, includeSnapshot:true}</code>。</li>
+<li><code>session/setModel</code> 要求对象式 <code>{providerId, modelId, options:{reasoningLevel}}</code>；
+<code>reasoningLevel</code> 取自条目上报的档位（本机是 low/high/max，默认 max）。</li>
+<li>agent 发模型请求前回调 <code>interaction/requestProviderRuntimeHeaders</code> 要鉴权 —— 回共享凭证里的
+<strong><code>zcodejwttoken</code></strong>（<code>oauth:zai:access_token</code> 已过期，回它上游 401）。agent 自己算签名，能过 WAF。</li>
+<li><code>session/event</code> 的事件类型在 <strong>params.type 顶层</strong>（不是 payload.type），<code>turn.failed</code> 也要处理
+（错误码在 <code>payload.error.attribution.providerErrorCode</code>），<code>replayState</code> 里不能有 <code>undefined</code>
+字段（lossless JSON 校验会炸）。</li>
+<li>服务端请求必须应答，否则 <code>session/create</code> 挂起：<code>session/requestRuntimePreferences</code> 回
+<code>{nativeSearchEnhancementsEnabled:false, memoryEnabled:false, askUserQuestionAutoResolutionEnabled:true, modelContextBudgetStrategy:'preflight-v1'}</code> 就够。</li>
+<li><strong>CLI 探测按版本择优</strong>（v0.5.x）：<code>ZCODE_CLI_PATH</code> → 桌面端默认安装位 → Windows 各盘根
+<code>X:\ZCode\resources\glm\zcode.cjs</code> → macOS/Linux 常见位 → PATH 里的 <code>zcode-app-cli</code>，
+全部存在的候选里选版本最高的一份（npm 布局读 package.json；桌面布局没有清单，
+用 <code>~/.zcode/v2/runtime/provider</code> 下最新 builtin 目录名作版本代理）。平局按此顺序取先者。
+3.16 新增的服务端请求（如 <code>interaction/requestOfficialMcpAuthHeaders</code>、<code>mcp/ui*</code>）不认识
+也必须应答，插件统一回空对象——对应功能降级，但不挂会话。</li>
+</ol>
+<blockquote>
+<p>HTTP 直连计划端点会被无痕验证拦 —— 只有 agent 二进制自己发的签名请求能过，
+所以「反代」的形态是托管 agent 进程而不是自建 HTTP 网关。</p>
+</blockquote>
+<h2 id="回合锁与自愈">回合锁与自愈</h2>
+<p>app-server <strong>一个会话同时只允许一个在途回合</strong>。上一轮被中止 / 超时 / 静默丢弃时它不会自己释放，
+下一轮 <code>session/send</code> 就被拒成 <code>A prompt is already running for this session</code>。通道层做六件事兜底：</p>
+<ol>
+<li><strong>立即请求 <code>session/stop</code></strong>：<code>AbortSignal</code> 触发时主动发送带请求 ID 的停止请求，即使宿主已停止拉取流也会执行。CLI 会忽略无 ID 的通知。清理和回合锁释放不依赖生成器继续运行，迟到的生成器收尾也不会停止下一轮；超时 / 发送失败 / <code>turn.failed</code> 仍由收尾路径清理；</li>
+<li><strong>撞锁自愈</strong>：<code>send</code> 被回「already running」时请求 stop，再新建会话重试一次；被回「session … not found」（会话被回收 / 进程重启）时同样新建。中断后的下一轮也会新建会话，按 <code>firstTurn</code> 语义重放整段对话；旧会话迟到的结束事件无法污染新一轮结果；</li>
+<li><strong>回合串行化</strong>：同一 DSH 会话的两轮排队跑（最多等 60s，超时放行交给 2 处理）；</li>
+<li><strong>进程退出即作废 + 快败</strong>：app-server 子进程退出（含 spawn 失败）时清空会话映射，
+<strong>在途的流会立刻收到一个回合失败收尾</strong>，不用干等回合超时；</li>
+<li><strong>会话分叉检测</strong>：每轮 send 都记录当时的消息列表指纹；下一轮续接前先比对前缀，
+DSH 侧编辑 / 回退过历史就重建会话、按首轮语义重放新分支；</li>
+<li><strong>模型映射</strong>：DSH 选的模型 id 经 catalogue 解析成 <code>{providerId, modelId}</code>；
+同一会话中途换模型时在原会话上重发 <code>session/setModel</code>，解析不出来就保留会话默认模型并记 warn。</li>
+</ol>
+<p>正文和 reasoning 各持有独立的流式过滤状态。可能的伪工具标签前缀暂存到能够判断后再发出，完整标签和跨 delta 的标签都会截断对应通道；收尾队列也走相同过滤。普通词语 <code>function_calls</code>、HTML 和大小比较保持原样。正文最终块与已发送的正文保持一致，避免收尾时重新带回被拦截的内容。</p>
+<h2 id="诊断命令">诊断命令</h2>
+<p>插件带一个不依赖 DSH 宿主的诊断入口（只用 Node 内置模块，<strong>插件因版本不兼容加载失败时也能用</strong>）：</p>
+<pre><code>node bin/dsh-zcode-plan-bridge.js              # 列出子命令
+node bin/dsh-zcode-plan-bridge.js doctor       # 本地前置条件体检（离线，不耗额度）
+node bin/dsh-zcode-plan-bridge.js models       # 打印 CLI 上报的完整模型清单
+node bin/dsh-zcode-plan-bridge.js protocol     # 起 app-server 走一遍握手，验证协议没变
+node bin/dsh-zcode-plan-bridge.js turn &quot;hi&quot;    # 真发一个回合（消耗额度）
+node bin/dsh-zcode-plan-bridge.js image &lt;file&gt; # 发一张图（消耗额度）
+</code></pre>
+<p>通用参数：<code>--cli-path &lt;zcode.cjs&gt;</code>、<code>--data-dir &lt;~/.zcode 的上级&gt;</code>、<code>--model &lt;id&gt;</code>、<code>--json</code>、
+<code>--allow-tools</code>。</p>
+<p><code>--allow-tools</code> 默认<strong>关闭</strong>，和插件本身的 <code>authorizationPolicy: deny</code> 一致。诊断命令会真的用你的
+账号起一个 app-server agent，所以不带这个 flag 时，探针会对 agent 的工具权限请求回 <code>deny</code>：
+<code>turn</code> / <code>image</code> 能验证通道和用量，但 agent 跑不了 Bash、写不了文件、上不了网。确实需要让探针
+执行工具时再显式加上它。名称含 <code>approval</code>/<code>permission</code> 的未知请求两种情况下都拒绝。</p>
+<p><code>doctor</code> 会检查 node 版本、CLI 定位、builtin release（<strong>只读检查，不喂给 CLI</strong>）、
+凭证（只打印长度与是否 JWT，绝不打印 token 本体）、以及 CLI 上报的模型清单。</p>
+<blockquote>
+<p>这五个子命令取代了上游 <code>scripts/probe-*.cjs</code> 那十个一次性脚本。那些脚本各自硬编码了作者
+本机路径、改一次才能问另一个问题，已删除。</p>
+</blockquote>
+<h2 id="配置设置--插件">配置（设置 → 插件）</h2>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>true</code></td>
+<td>总开关</td>
+</tr>
+<tr>
+<td><code>zcodeCliPath</code></td>
+<td>自动探测（版本择优）</td>
+<td><code>zcode.cjs</code> 路径；空 = 在 <code>ZCODE_CLI_PATH</code>、桌面客户端安装位（含 Windows 任意盘根 <code>X:\ZCode</code>）、<code>zcode-app-cli</code> 全局包等候选里<strong>选版本最新</strong>的一份。显式填写则不做择优，直接用这份</td>
+</tr>
+<tr>
+<td><code>zcodeCliNode</code></td>
+<td><code>node</code></td>
+<td>运行 zcode.cjs 的 node 可执行文件</td>
+</tr>
+<tr>
+<td><code>cliModels</code></td>
+<td><code>[]</code></td>
+<td><strong>留空 = 跟随 CLI 上报的清单</strong>（推荐）。填了就等于把清单钉死成这份，只用 <code>cliModelId</code> 决定 CLI 侧路由</td>
+</tr>
+<tr>
+<td><code>authorizationPolicy</code></td>
+<td><code>deny</code></td>
+<td><code>deny</code> 会拒绝 ZCode 的权限请求且不提供交互确认；只有你明确接受无人值守工具执行时才设为 <code>allow-all</code>。未知 permission/approval 方法始终拒绝</td>
+</tr>
+<tr>
+<td><code>cliCwd</code></td>
+<td>空</td>
+<td>app-server 会话的工作目录；空 = 用户主目录</td>
+</tr>
+<tr>
+<td><code>zcodeDataBaseDir</code></td>
+<td>空</td>
+<td>ZCode 数据根目录；空 = 用户主目录（即 <code>~/.zcode/v2</code>）</td>
+</tr>
+<tr>
+<td><code>childEnvAllow</code></td>
+<td><code>[]</code></td>
+<td>额外透传给子进程的环境变量名</td>
+</tr>
+<tr>
+<td><code>appServerTimeoutMs</code></td>
+<td><code>120000</code></td>
+<td>单次 JSON-RPC 请求超时（毫秒）</td>
+</tr>
+<tr>
+<td><code>zcodeCliTimeoutMs</code></td>
+<td><code>900000</code></td>
+<td>单回合超时（毫秒）</td>
+</tr>
+<tr>
+<td><code>maxTokens</code></td>
+<td><code>128000</code></td>
+<td>仅作兜底：CLI 未上报 <code>maxOutputTokens</code> 时使用</td>
+</tr>
+<tr>
+<td><code>defaultContextWindow</code></td>
+<td><code>1000000</code></td>
+<td>仅作兜底：CLI 未上报 <code>contextWindow</code> 时使用</td>
+</tr>
+</tbody>
+</table>
+<h2 id="开发">开发</h2>
+<pre><code class="language-bash">npm test           # 纯函数单测（不 spawn CLI、不耗额度）
+npm run typecheck  # tsc --checkJs 全量类型校验（零构建，装进 profile 免编译）
+npm run diagnose   # 诊断命令入口
+</code></pre>
+<p><strong>改了代码怎么生效</strong>：DSH 的 loader 只在<strong>行 name 变化</strong>时重新 import 插件模块，
+而 Node ESM 以完整 URL（含查询串）为缓存键。仓库里的 <code>cordis.patch.yml</code> 写的是包名
+（npm / link: 装配的正确形态）；本地目录式开发装配时把它换成 file:// URL 加 <code>?v=N</code>：</p>
+<pre><code class="language-yaml">- insert:
+    - id: dsh-zcode-plan-bridge
+      name: 'file:///D:/path/to/dsh-zcode-plan-bridge/lib/index.js?v=N'
+</code></pre>
+<p>改完 <code>lib/*.js</code> 后把 <code>?v=N</code> 递增，然后在插件管理里对 bundle <strong>禁用 → 启用</strong>（或重启 DSH）。</p>
+<h2 id="目录结构">目录结构</h2>
+<pre><code>lib/index.js        插件装配：Config schema、provider 注册、模型清单来源决策
+lib/app-server.js   app-server 通道：JSON-RPC 客户端 + LlmAdapter（事件流/回合锁/鉴权）
+lib/zcode-runtime.js CLI 发现、catalogue 归一化与路由选择（只用 Node 内置模块）
+lib/messages.js     消息工具：图片物化、对话拍平、泄漏工具调用清洗
+lib/credentials.js  解密 ~/.zcode/v2/credentials.json
+lib/diagnostics.js  五个诊断子命令（doctor/models/protocol/turn/image）
+bin/                可执行入口
+test/               纯函数单测（node --test）
+</code></pre>
+<h2 id="许可">许可</h2>
+<p>AGPL-3.0。本仓库是 <a href="https://github.com/kyle123740/dsh-zcode-cli-proxy">kyle123740/dsh-zcode-cli-proxy</a>
+的衍生版：app-server 通道的逆向结论（回合锁、事件流、鉴权回调）源自上游，
+v0.4.x 依实机重新验证并改写了账号/模型层。历史来源致谢
+<a href="https://github.com/liu5269/zcode2api">liu5269/zcode2api</a>，其代码已不再随本仓库分发。</p>
+<h1 id="社区自动重试可选">社区自动重试（可选）</h1>
+<p>桥接包当前内附 <strong>0.3.2</strong> 的 Retry 代码副本，供下方 DSH 可选接入使用；它不会随独立插件更新自动升级。独立 ZCode 插件现由 <a href="https://github.com/tangyixiao/zcode-community-retry">zcode-community-retry</a> 仓库维护，当前已发布 <strong>0.3.3</strong>，请从该仓库的市场安装和更新，具体支持与验收边界以该仓库说明为准。本仓库的旧市场仍列出 0.3.2 和 Keeper 0.1.0，仅作为旧版入口，不会自动跟进独立仓库。旧外部桌面启动器已撤回。</p>
+<p>DSH 桥接中可单独选择启用，默认关闭：</p>
+<pre><code class="language-yaml">communityRetry:
+  enabled: true
+  mode: unlimited
+  intervalMs: 10000  # 每 10 秒重试一次
+</code></pre>
+<p>开启后由社区模块统一管理物理请求重试，关闭原生及 DSH 外层重试。无限模式无次数和累计恢复时长上限，且取消桥接自身 15 分钟回合超时；调用方取消仍优先，<code>session/stop</code> 使用有响应的请求。已有桥接子进程保持原配置，下次创建才生效。</p>
+<p>并发限制、临时网络失败、限流和暂时服务端错误会持续重试，直到成功或取消。1113、认证失败、长期额度和模型权限错误直接返回。有效输出后的中断不重放请求，整个会话与工具不会被重新提交。默认只管理 ZCode/Z.AI/BigModel 推理请求，自定义模型服务需在 <code>allowedOrigins</code> 明确列出 origin。DSH 另支持 <code>mode: bounded</code> 和较大的 <code>maxRetries</code>，该模式仍遵守 <code>budgetMs</code>。</p>
+</article>
+</div></main><footer class="docs-footer wrap"><a href="index.html">返回首页</a><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge">GitHub 源仓库</a></footer>
+<script type="module" src="assets/system.js"></script></body></html>
