@@ -22,6 +22,7 @@ import {
   readCurrentModel,
   readModelCatalog,
   selectBestCli,
+  selectLaunchableCli,
 } from '../lib/zcode-runtime.js'
 import { deriveKey, decryptValue, readZaiPlanAuth } from '../lib/credentials.js'
 import { flattenConversation, lastUserText, sanitizeLeakedCalls } from '../lib/messages.js'
@@ -87,6 +88,15 @@ test('selectBestCli prefers the newest kernel and breaks ties by list order', ()
   // An unreadable version loses to any readable one; among unreadables, the first stays.
   assert.equal(selectBestCli([desktop, npmOld], () => ''), desktop)
   assert.equal(selectBestCli([], versionOf), '')
+})
+
+test('automatic discovery skips an incomplete desktop bundle when a complete CLI is available', () => {
+  const desktop = 'desktop'
+  const npm = 'npm'
+  const version = p => p === desktop ? '3.17.2' : '3.17.1'
+  assert.equal(selectLaunchableCli([desktop, npm], version, p => p === npm), npm)
+  assert.equal(selectLaunchableCli([desktop], version, () => false), desktop)
+  assert.equal(selectLaunchableCli([desktop, npm], version, () => true), desktop)
 })
 
 test('normalizeCatalogEntry treats absent image support as unsupported', () => {
