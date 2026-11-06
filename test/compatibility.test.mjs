@@ -10,14 +10,14 @@ test('DSH compatibility is declared at the engine path read by the host and npm 
   assert.equal(manifest.dsh.engines, undefined);
 });
 
-for (const version of ['0.1.5-rc.1', '0.1.7-rc.1', '0.2.0-rc.1', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1']) {
+for (const version of ['0.1.5-rc.1', '0.1.7-rc.1', '0.2.0-rc.1', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1', '0.2.2-rc.1']) {
   test(`DSH engine and model peer accept ${version}`, () => {
     assert.ok(semver.satisfies(version, manifest.engines.dsh));
     assert.ok(semver.satisfies(version, manifest.peerDependencies['@deepseek-ai/dsh-llm']));
   });
 }
 
-for (const version of ['0.1.4', '0.3.0-rc.1', '0.3.0', '1.0.0']) {
+for (const version of ['0.1.4', '0.2.2-rc.2', '0.3.0-rc.1', '0.3.0', '1.0.0']) {
   test(`DSH engine and model peer reject ${version}`, () => {
     assert.equal(semver.satisfies(version, manifest.engines.dsh), false);
     assert.equal(semver.satisfies(version, manifest.peerDependencies['@deepseek-ai/dsh-llm']), false);
