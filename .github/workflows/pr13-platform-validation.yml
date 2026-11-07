@@ -1,0 +1,29 @@
+name: PR 13 platform validation
+on:
+  push:
+    branches: [codex/pr13-platform-validation]
+permissions:
+  contents: read
+jobs:
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+      - name: Check host platform and architecture
+        run: node -p "JSON.stringify({platform:process.platform,arch:process.arch,node:process.version})"
+      - name: Verify host runtime path
+        run: node .github/workflows/pr13-native-probe.mjs
+      - name: Run PR regression tests
+        run: node --test test/runtime.test.mjs test/start-plan.test.mjs
+      - name: Check types
+        run: npm run typecheck
