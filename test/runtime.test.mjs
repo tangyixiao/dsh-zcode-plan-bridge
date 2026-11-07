@@ -246,24 +246,35 @@ test('lastUserText returns the newest non-empty user turn', () => {
   assert.equal(lastUserText(undefined, new Map()), '')
 })
 
-test('resolveBuiltinRuntime finds desktop-downloaded releases under the Rust-style platform directory', t => {
+test('resolveBuiltinRuntime finds desktop-downloaded releases across platforms', t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-runtime-'))
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
   const providerRoot = path.join(directory, '.zcode', 'v2', 'runtime', 'provider')
-  // The desktop client names release directories after Rust targets (`darwin-aarch64`),
-  // while Node's `process.arch` spells the same machine `arm64`; both spellings must not
-  // be confused, or the release tree exists but is never found (Apple Silicon).
-  const archDir = process.arch === 'arm64' ? 'aarch64' : 'x86_64'
-  const active = path.join(providerRoot, `darwin-${archDir}`, '3.17.2', 'endpoint-78d7', 'zcode-builtin.json')
-  fs.mkdirSync(path.dirname(active), { recursive: true })
-  fs.writeFileSync(active, JSON.stringify({ revision: 43 }))
-  const decoy = path.join(providerRoot, `darwin-${process.arch}`, '3.17.2', 'endpoint-78d7', 'zcode-builtin.json')
-  fs.mkdirSync(path.dirname(decoy), { recursive: true })
-  fs.writeFileSync(decoy, JSON.stringify({ revision: 43 }))
-  const resolved = resolveBuiltinRuntime(directory, '')
-  assert.ok(resolved, 'a healthy release tree must resolve')
-  assert.equal(resolved.activeFilePath, active)
-  assert.equal(resolved.version, '3.17.2')
-  assert.equal(resolved.revision, 43)
-  assert.equal(resolved.source, 'active')
+  const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')
+  const archDescriptor = Object.getOwnPropertyDescriptor(process, 'arch')
+  try {
+    for (const [platform, arch, target] of [
+      ['darwin', 'arm64', 'darwin-aarch64'],
+      ['darwin', 'x64', 'darwin-x86_64'],
+      ['linux', 'arm64', 'linux-aarch64'],
+      ['linux', 'x64', 'linux-x86_64'],
+      ['win32', 'arm64', 'windows-aarch64'],
+      ['win32', 'x64', 'windows-x86_64'],
+    ]) {
+      Object.defineProperty(process, 'platform', { value: platform, configurable: true })
+      Object.defineProperty(process, 'arch', { value: arch, configurable: true })
+      const active = path.join(providerRoot, target, '3.17.2', 'endpoint-78d7', 'zcode-builtin.json')
+      fs.mkdirSync(path.dirname(active), { recursive: true })
+      fs.writeFileSync(active, JSON.stringify({ revision: 43 }))
+      const resolved = resolveBuiltinRuntime(directory, '')
+      assert.ok(resolved, `${target} release tree must resolve`)
+      assert.equal(resolved.activeFilePath, active)
+      assert.equal(resolved.version, '3.17.2')
+      assert.equal(resolved.revision, 43)
+      assert.equal(resolved.source, 'active')
+    }
+  } finally {
+    Object.defineProperty(process, 'platform', platformDescriptor)
+    Object.defineProperty(process, 'arch', archDescriptor)
+  }
 })
