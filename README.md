@@ -83,6 +83,12 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 鉴权仍由本机已登录的 ZCode 账号提供。插件独立保存 provider 配置，不修改
 桌面端或终端 CLI 的共享默认模型。授权获取失败时直接报错，不回退到 Coding Plan。
 
+**BigModel 登录同样适用。** `zcode.z.ai` 的余额接口与登录家族无关：桌面端用
+BigModel（`open.bigmodel.cn`）账号登录时（`oauth:active_provider = bigmodel`），同一份
+`zcodejwttoken` 查询到的 plans/balances 结构完全相同（2026-11-07 实测：plan
+`zcode-v3-start-plan-1106-wk` → `model:glm-5.3-flash`）。`account:zai-start-plan` 只是
+CLI 内部的通道 id，不代表登录家族；`zai`/`bigmodel` 之外的登录家族仍在任何请求发出前被拒绝。
+
 `0.6.0-community.4` 改用 3.17.1 实际使用的 balance 接口；已弃用的
 `billing/current` 可能返回 HTTP 200 / code 0 的空对象，不能据此认定账号没有套餐。
 请求仅使用同一 ZCode 数据根目录下现有的 `.zcode/v2/telemetry-state.json.deviceMid`，
@@ -119,6 +125,15 @@ zcodeCliPath: 'D:\npm-global\node_modules\zcode-app-cli\vendor\zcode.cjs'
 
 3.15+ 的 builtin registry 还带了 `account:zai-highspeed-card` 等 HighSpeed 通道；清单里出现
 `account:` 前缀路由时插件仍然优先它（烧计划额度），`zai-api` 路由按 CLI 自己的计费口径走。
+
+### start-plan 无法启用：doctor 报「ZCode builtin runtime not found」
+
+桌面端把下载的内核 release 存在 `~/.zcode/v2/runtime/provider/<平台>/` 下，目录名用 Rust
+风格目标名（Apple Silicon 是 `darwin-aarch64`），而 Node 的 `process.arch` 拼出来是
+`darwin-arm64`。直接拼接 `process.arch` 会永远找不到 release：`doctor` 第 3 步报 not
+found，start-plan 模式抛 "Start Plan requires a compatible bundled provider config"，
+尽管 `~/.zcode/v2/runtime` 下明明有健康的版本树。已改为按磁盘命名映射（`arm64→aarch64`、
+`x64→x86_64`），与 win32 分支的既有做法一致。
 
 ### DSH rc.3 一直显示「正在加载模型」
 

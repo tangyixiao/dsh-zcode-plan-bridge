@@ -99,17 +99,42 @@ test('HTTP response time overrides a stale JSON clock for expiry', () => {
   assert.throws(() => runtime.startPlanModelIds(payload, builtinIds, { responseTime: 1793581201 }), /No active Start Plan model entitlements/)
 })
 
-function requestFixture(t, deviceMid = 'fixture-device-mid') {
+function requestFixture(t, deviceMid = 'fixture-device-mid', activeProvider = 'zai') {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-start-plan-'))
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
   const root = path.join(directory, '.zcode', 'v2')
   fs.mkdirSync(root, { recursive: true })
-  fs.writeFileSync(path.join(root, 'credentials.json'), JSON.stringify({ zcodejwttoken: 'fixture-jwt-never-a-real-credential', 'oauth:active_provider': 'zai' }))
+  fs.writeFileSync(path.join(root, 'credentials.json'), JSON.stringify({ zcodejwttoken: 'fixture-jwt-never-a-real-credential', 'oauth:active_provider': activeProvider }))
   if (deviceMid !== undefined) fs.writeFileSync(path.join(root, 'telemetry-state.json'), JSON.stringify({ deviceMid }))
   const activeFilePath = path.join(directory, 'zcode-builtin.json')
   fs.writeFileSync(activeFilePath, JSON.stringify({ config: { providerConfigRules: { providerRules: [{ config: { builtinModelIds: builtinIds } }], templateRules: [] } } }))
   return { directory, root, builtin: { version: '3.17.1', activeFilePath, revision: 43 } }
 }
+
+test('a BigModel-family login queries the same balance endpoint and resolves its grants', async t => {
+  assert.equal(typeof startPlan.fetchStartPlanModels, 'function')
+  const { directory, builtin } = requestFixture(t, 'fixture-device-mid', 'bigmodel')
+  let calls = 0
+  const models = await startPlan.fetchStartPlanModels(builtin, directory, async (url, options) => {
+    calls++
+    assert.equal(url, 'https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=3.17.1')
+    assert.equal(options.headers.authorization, 'Bearer fixture-jwt-never-a-real-credential')
+    return Response.json(currentFixture(), { headers: { date: 'Sun, 01 Nov 2026 06:48:46 GMT' } })
+  })
+  assert.deepEqual(models, ['GLM-5.3-Flash'])
+  assert.equal(calls, 1)
+})
+
+test('logins outside the Z.AI and BigModel families are refused before any authenticated request', async t => {
+  assert.equal(typeof startPlan.fetchStartPlanModels, 'function')
+  const { directory, builtin } = requestFixture(t, 'fixture-device-mid', 'openai')
+  let calls = 0
+  await assert.rejects(
+    startPlan.fetchStartPlanModels(builtin, directory, async () => { calls++; throw Error('must not fetch') }),
+    /Z\.AI or BigModel account/i,
+  )
+  assert.equal(calls, 0)
+})
 
 test('queries balance exactly once with the real app version and existing device header, without changing files', async t => {
   assert.equal(typeof startPlan.fetchStartPlanModels, 'function')
