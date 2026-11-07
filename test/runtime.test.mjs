@@ -12,6 +12,9 @@
 
 import assert from 'node:assert/strict'
 import { createCipheriv, createHash, randomBytes } from 'node:crypto'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { test } from 'node:test'
 
 import {
@@ -21,6 +24,7 @@ import {
   pickCatalogEntry,
   readCurrentModel,
   readModelCatalog,
+  resolveBuiltinRuntime,
   selectBestCli,
   selectLaunchableCli,
 } from '../lib/zcode-runtime.js'
@@ -240,4 +244,26 @@ test('lastUserText returns the newest non-empty user turn', () => {
   assert.equal(lastUserText(messages, new Map()), 'second')
   assert.equal(lastUserText([{ role: 'assistant', content: 'only' }], new Map()), '')
   assert.equal(lastUserText(undefined, new Map()), '')
+})
+
+test('resolveBuiltinRuntime finds desktop-downloaded releases under the Rust-style platform directory', t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-runtime-'))
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
+  const providerRoot = path.join(directory, '.zcode', 'v2', 'runtime', 'provider')
+  // The desktop client names release directories after Rust targets (`darwin-aarch64`),
+  // while Node's `process.arch` spells the same machine `arm64`; both spellings must not
+  // be confused, or the release tree exists but is never found (Apple Silicon).
+  const archDir = process.arch === 'arm64' ? 'aarch64' : 'x86_64'
+  const active = path.join(providerRoot, `darwin-${archDir}`, '3.17.2', 'endpoint-78d7', 'zcode-builtin.json')
+  fs.mkdirSync(path.dirname(active), { recursive: true })
+  fs.writeFileSync(active, JSON.stringify({ revision: 43 }))
+  const decoy = path.join(providerRoot, `darwin-${process.arch}`, '3.17.2', 'endpoint-78d7', 'zcode-builtin.json')
+  fs.mkdirSync(path.dirname(decoy), { recursive: true })
+  fs.writeFileSync(decoy, JSON.stringify({ revision: 43 }))
+  const resolved = resolveBuiltinRuntime(directory, '')
+  assert.ok(resolved, 'a healthy release tree must resolve')
+  assert.equal(resolved.activeFilePath, active)
+  assert.equal(resolved.version, '3.17.2')
+  assert.equal(resolved.revision, 43)
+  assert.equal(resolved.source, 'active')
 })
