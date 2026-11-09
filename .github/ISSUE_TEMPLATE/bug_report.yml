@@ -1,0 +1,38 @@
+{
+  "name": "Bug report / 缺陷报告",
+  "description": "A reproducible plugin, skill or index problem",
+  "labels": [
+    "bug"
+  ],
+  "body": [
+    {
+      "type": "textarea",
+      "id": "versions",
+      "attributes": {
+        "label": "Versions and installation / 版本与安装方式",
+        "description": "Include plugin/host/platform versions and stable or preview channel. Do not include tokens or private paths."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "reproduce",
+      "attributes": {
+        "label": "Steps and expected behavior / 复现与预期"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Redacted evidence / 脱敏证据",
+        "description": "Use shareable reports when provided. Remove credentials, account identifiers and private content."
+      }
+    }
+  ]
+}

@@ -76,7 +76,9 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "assets/logo.webp"
+    "assets/logo.webp",
+    "assets/NOTICE.md",
+    "assets/LICENSE-WHALE-ARTWORK"
   ],
   "icon": "./assets/logo.webp"
 }

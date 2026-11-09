@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "standard_version": "0.1.0",
+  "repository": "tangyixiao/dsh-zcode-plan-bridge",
+  "distribution": "npm",
+  "logo": "assets/logo.webp",
+  "readme": {
+    "primary": "README.md",
+    "secondary": "README.en.md"
+  },
+  "resources": {
+    "free_space_reserve_gib": 10,
+    "temporary_growth_warning_gib": 1,
+    "temporary_growth_budget_gib": 2,
+    "max_log_mib": 20,
+    "max_heavy_jobs_per_machine": 1,
+    "max_logo_kib": 256,
+    "artifact_retention_days": 14
+  },
+  "desired_settings": {
+    "issues": true,
+    "discussions": true,
+    "projects": true,
+    "private_vulnerability_reporting": true,
+    "delete_branch_on_merge": true
+  },
+  "exceptions": {
+    "packages": "Use the actual existing distribution channel; no placeholder GitHub Packages, container or app-store package.",
+    "wiki": "Versioned docs are the authoritative guidance. Existing Wiki content/settings are preserved; no duplicate manual or empty completion claim.",
+    "publishing": "No new registry credential or automatic release is provisioned by this source configuration.",
+    "progress": "Track actual releases and issues; do not invent percentages or deadlines."
+  }
+}
