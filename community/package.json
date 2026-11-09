@@ -4,8 +4,29 @@
   "description": "Unofficial in-app ZCode unlimited retry plugin with configurable interval and optional CLI/DSH integration",
   "license": "AGPL-3.0",
   "type": "module",
-  "engines": { "node": ">=22" },
-  "bin": { "zcode-community-retry-agent": "bin/agent.cjs" },
-  "files": ["runtime", "bin", "hooks", ".zcode-plugin", ".mcp.json", "commands", "marketplace.json", "README.md", "LICENSE"],
-  "repository": { "type": "git", "url": "https://github.com/tangyixiao/dsh-zcode-plan-bridge.git", "directory": "community" }
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "zcode-community-retry-agent": "bin/agent.cjs"
+  },
+  "icon": "./assets/logo.webp",
+  "files": [
+    "assets/logo.webp",
+    "runtime",
+    "bin",
+    "hooks",
+    ".zcode-plugin",
+    ".mcp.json",
+    "commands",
+    "marketplace.json",
+    "README.md",
+    "LICENSE",
+    "assets/NOTICE.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tangyixiao/dsh-zcode-plan-bridge.git",
+    "directory": "community"
+  }
 }

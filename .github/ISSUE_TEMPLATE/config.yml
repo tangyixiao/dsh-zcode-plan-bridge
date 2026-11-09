@@ -1,0 +1,15 @@
+{
+  "blank_issues_enabled": false,
+  "contact_links": [
+    {
+      "name": "Questions / 使用问题",
+      "url": "https://github.com/tangyixiao/dsh-zcode-plan-bridge/discussions",
+      "about": "Questions, ideas and examples; redact private data."
+    },
+    {
+      "name": "Private security report",
+      "url": "https://github.com/tangyixiao/dsh-zcode-plan-bridge/security/advisories/new",
+      "about": "Do not disclose vulnerabilities or credentials in public issues."
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+<p><img src="assets/logo.webp" width="96" height="96" alt="ZCode Community Retry logo"></p>
+
 # ZCode Community Retry 0.3.2（非官方）
 
 本目录是桥接仓库内随包保留的 0.3.2 代码副本。独立插件的新版本和市场入口在 [zcode-community-retry 独立仓库](https://github.com/tangyixiao/zcode-community-retry)，当前已发布 0.3.3；更新独立插件不会改变桥接包内副本。以下是本副本的历史使用与验证说明。

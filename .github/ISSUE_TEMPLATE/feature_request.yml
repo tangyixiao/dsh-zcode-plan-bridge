@@ -1,0 +1,26 @@
+{
+  "name": "Feature request / 功能建议",
+  "description": "Describe a real workflow and the missing result",
+  "labels": [
+    "enhancement"
+  ],
+  "body": [
+    {
+      "type": "textarea",
+      "id": "workflow",
+      "attributes": {
+        "label": "Workflow and desired result / 使用场景与结果"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "alternatives",
+      "attributes": {
+        "label": "Current workaround / 当前替代方法"
+      }
+    }
+  ]
+}

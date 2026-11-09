@@ -1,0 +1,32 @@
+[
+  {
+    "name": "bug",
+    "color": "d73a4a",
+    "description": "Reproducible defect"
+  },
+  {
+    "name": "enhancement",
+    "color": "a2eeef",
+    "description": "Feature request or improvement"
+  },
+  {
+    "name": "documentation",
+    "color": "0075ca",
+    "description": "Documentation and examples"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366d6",
+    "description": "Dependency and Action updates"
+  },
+  {
+    "name": "maintenance",
+    "color": "cfd3d7",
+    "description": "Repository and build maintenance"
+  },
+  {
+    "name": "security",
+    "color": "b60205",
+    "description": "Maintainer-reviewed security work"
+  }
+]
