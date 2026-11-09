@@ -14,7 +14,9 @@ async function runtime() {
 }
 
 function fixture() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retry-keeper-unit-'))
+  // Registration returns physical paths; macOS may expose the temp root through
+  // an alias (for example /var versus /private/var). Model that same identity.
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'retry-keeper-unit-')))
   const storage = path.join(dir, 'plugins')
   const keeperRoot = path.join(storage, 'cache', 'tangyixiao-zcode-community', 'zcode-retry-keeper', '0.1.0')
   const retryRoot = path.join(storage, 'cache', 'tangyixiao-zcode-community', 'zcode-community-retry', '0.3.2')
