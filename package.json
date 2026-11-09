@@ -37,7 +37,8 @@
     ".": {
       "default": "./lib/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./icon": "./assets/logo.webp"
   },
   "dsh": {
     "bundle": {
@@ -74,6 +75,8 @@
     "community",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
-  ]
+    "LICENSE",
+    "assets/logo.webp"
+  ],
+  "icon": "./assets/logo.webp"
 }
