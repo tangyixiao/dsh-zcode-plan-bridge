@@ -42,7 +42,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.0
 
 ```sh
 npm ci --ignore-scripts
-npm test
+npm run test:offline
 npm run typecheck
 node tools/check-repository.mjs
 ```
@@ -64,3 +64,5 @@ node tools/check-repository.mjs
 软件保持原许可证；鲸鱼娘衍生美术单独采用 CC BY-NC-SA 4.0，并保留上善、ZipZipPipe、Small-tailqwq 的署名链。
 
 Derived from [kyle123740/dsh-zcode-cli-proxy](https://github.com/kyle123740/dsh-zcode-cli-proxy), under AGPL-3.0.
+
+离线检查：`npm run test:offline`。`npm run test:native` 保留真实 CLI / Desktop 内核验收，需要对应本机安装；`npm run test:all` 运行完整发现集。

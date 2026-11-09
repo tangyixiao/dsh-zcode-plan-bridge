@@ -29,9 +29,12 @@
     "dsh-zcode-plan-bridge": "bin/dsh-zcode-plan-bridge.js"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=1",
+    "test": "npm run test:offline",
     "typecheck": "tsc -p tsconfig.json",
-    "diagnose": "node bin/dsh-zcode-plan-bridge.js"
+    "diagnose": "node bin/dsh-zcode-plan-bridge.js",
+    "test:offline": "node scripts/test-offline.mjs",
+    "test:native": "node --test --test-concurrency=1 test/community-cli.test.mjs test/community-native.test.mjs test/force-keeper-native.test.mjs",
+    "test:all": "node --test --test-concurrency=1"
   },
   "exports": {
     ".": {

@@ -2,11 +2,16 @@ import assert from 'node:assert/strict'
 import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const config = JSON.parse(await readFile(path.join(root, '.github/toss.json'), 'utf8'))
 const required = ['README.md', config.readme.secondary, 'AGENTS.md', 'CONTRIBUTING.md', 'SUPPORT.md', 'SECURITY.md', 'docs/maintenance.md', '.github/dependabot.yml', '.github/labels.json', '.github/release.yml', '.github/workflows/triage.yml', config.logo]
-for (const filename of required) assert((await stat(path.join(root, filename))).isFile(), `Missing ${filename}`)
+const tracked = new Set(execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0'))
+for (const filename of required) {
+  assert(tracked.has(filename), `Required source is not tracked: ${filename}`)
+  assert((await stat(path.join(root, filename))).isFile(), `Missing ${filename}`)
+}
 assert((await stat(path.join(root, config.logo))).size <= 256 * 1024, 'Logo exceeds the DSH 256 KiB limit')
 const labels = JSON.parse(await readFile(path.join(root, '.github/labels.json'), 'utf8'))
 assert.equal(new Set(labels.map(label => label.name)).size, labels.length, 'Duplicate repository labels')

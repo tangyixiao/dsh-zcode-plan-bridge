@@ -42,7 +42,7 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 ```sh
 npm ci --ignore-scripts
-npm test
+npm run test:offline
 npm run typecheck
 node tools/check-repository.mjs
 ```
@@ -64,3 +64,5 @@ The external chart uses real star records and may be cached or unavailable; no d
 Software retains its existing license. Whale-girl derivative artwork is separately CC BY-NC-SA 4.0 with the attribution chain for 上善, ZipZipPipe and Small-tailqwq.
 
 Derived from [kyle123740/dsh-zcode-cli-proxy](https://github.com/kyle123740/dsh-zcode-cli-proxy), under AGPL-3.0.
+
+Offline validation: `npm run test:offline`. `npm run test:native` retains the real CLI/Desktop kernel suites and requires the corresponding installed hosts; `npm run test:all` runs full discovery.
