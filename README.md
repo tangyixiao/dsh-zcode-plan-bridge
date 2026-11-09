@@ -4,7 +4,7 @@
 
 <p align="center">把 DSH 的模型请求交给本机已登录的 ZCode CLI，提供真实流式、图片和按账号读取的模型目录。</p>
 
-<p align="center">[简体中文](README.md) · [English](README.en.md)</p>
+<p align="center"><a href="README.md">简体中文</a> · <a href="README.en.md">English</a></p>
 
 [![Stars](https://img.shields.io/github/stars/tangyixiao/dsh-zcode-plan-bridge?style=flat)](https://github.com/tangyixiao/dsh-zcode-plan-bridge/stargazers) [![CI](https://img.shields.io/github/actions/workflow/status/tangyixiao/dsh-zcode-plan-bridge/check.yml?branch=main)](https://github.com/tangyixiao/dsh-zcode-plan-bridge/actions/workflows/check.yml) [![License](https://img.shields.io/github/license/tangyixiao/dsh-zcode-plan-bridge)](LICENSE) [![npm](https://img.shields.io/npm/v/dsh-zcode-plan-bridge)](https://www.npmjs.com/package/dsh-zcode-plan-bridge)
 
