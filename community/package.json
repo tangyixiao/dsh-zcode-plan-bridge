@@ -1,6 +1,6 @@
 {
   "name": "zcode-community-retry",
-  "version": "0.3.2",
+  "version": "0.3.5",
   "description": "Unofficial in-app ZCode unlimited retry plugin with configurable interval and optional CLI/DSH integration",
   "license": "AGPL-3.0",
   "type": "module",
@@ -10,9 +10,7 @@
   "bin": {
     "zcode-community-retry-agent": "bin/agent.cjs"
   },
-  "icon": "./assets/logo.webp",
   "files": [
-    "assets/logo.webp",
     "runtime",
     "bin",
     "hooks",
@@ -22,11 +20,17 @@
     "marketplace.json",
     "README.md",
     "LICENSE",
+    "assets/logo.webp",
     "assets/NOTICE.md"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tangyixiao/dsh-zcode-plan-bridge.git",
+    "url": "https://github.com/tangyixiao/zcode-community-retry.git",
     "directory": "community"
-  }
+  },
+  "homepage": "https://github.com/tangyixiao/zcode-community-retry#readme",
+  "bugs": {
+    "url": "https://github.com/tangyixiao/zcode-community-retry/issues"
+  },
+  "icon": "./assets/logo.webp"
 }

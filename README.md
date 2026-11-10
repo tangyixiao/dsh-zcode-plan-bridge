@@ -21,7 +21,7 @@
 Desktop：从发行页下载 `.tgz`，在“扩展 → 插件管理 → 添加插件”中安装。命令行示例用于你明确控制的 Web profile：
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.0
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.1
 ```
 
 先在 ZCode CLI 完成登录；在 DSH 中选择 `ZCode CLI` 模型组。需要 Start Plan 时显式设置 `accountMode: start-plan`，不要把余额错误直接当成需要充值。
@@ -30,7 +30,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.0
 
 | 项目 | 当前依据 |
 | --- | --- |
-| 源码版本 | `0.6.0` · 以 [package.json](package.json) 为准 |
+| 源码版本 | `0.6.1` · 以 [package.json](package.json) 为准 |
 | 分发方式 | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1` |
 | Node.js | `>=22` |

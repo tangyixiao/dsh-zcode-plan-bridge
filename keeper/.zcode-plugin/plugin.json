@@ -1,6 +1,6 @@
 {
   "name": "zcode-retry-keeper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "显式自动恢复 Community Retry：每次新建、恢复或提交聊天时检查当前 Agent。仅关闭 Retry 会由 Keeper 恢复；关闭或卸载 Keeper 即撤销此策略。不会启用其它插件。",
   "userConfig": {
     "settingsFile": {
