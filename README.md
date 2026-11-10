@@ -1,8 +1,10 @@
-<p align="center"><img src="assets/logo.webp" width="128" height="128" alt="ZCode Plan Bridge logo"></p>
+<p align="center"><img src="assets/logo.webp" width="192" height="192" alt="ZCode Plan Bridge logo"></p>
 
 <h1 align="center">ZCode Plan Bridge</h1>
 
 <p align="center">把 DSH 的模型请求交给本机已登录的 ZCode CLI，提供真实流式、图片和按账号读取的模型目录。</p>
+
+<p align="center"><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge"><img src="docs/assets/banner-zh-CN.svg" width="100%" alt="ZCode Plan Bridge — 查看项目与使用说明"></a></p>
 
 <p align="center"><a href="README.md">简体中文</a> · <a href="README.en.md">English</a></p>
 

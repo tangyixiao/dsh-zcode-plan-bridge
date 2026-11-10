@@ -9,3 +9,7 @@ Sources: [上善](https://www.pixiv.net/users/62155430), [ZipZipPipe](https://ww
 ZCode product identity reference: [official app icon](https://github.com/zai-org/ZCode/blob/a9fe401eede6e6e5e01be9048679c206fe6f02d9/public/logo/icons/256x256.png). ZCode names and marks remain with their owners. The new composition identifies an independent bridge/retry plugin.
 
 The repository software license does not replace third-party artwork or trademark terms. The artwork does not establish official affiliation or endorsement.
+
+## Character update, 2026-11-10
+
+The bridge icon now pairs the DSH whale-girl with ZipZipPipe's GLM fox-girl, joining a cable between them. The existing whale-character attribution and license above remain applicable to that component. New AI-assisted chibi composition by Tang Yixiao, generated with imagegen. GLM/GPT character reference: [ZipZipPipe original post](https://www.bilibili.com/opus/1233069202138464289). Reference catalog: [brand character guide](https://genderswapai.com/zh-CN/ai-gijinka/brand-to-character). Preserve attribution; the software license does not grant rights to third-party character designs. No additional upstream artwork license is asserted here.

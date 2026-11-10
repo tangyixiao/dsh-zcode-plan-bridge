@@ -1,8 +1,10 @@
-<p align="center"><img src="assets/logo.webp" width="128" height="128" alt="ZCode Plan Bridge logo"></p>
+<p align="center"><img src="assets/logo.webp" width="192" height="192" alt="ZCode Plan Bridge logo"></p>
 
 <h1 align="center">ZCode Plan Bridge</h1>
 
 <p align="center">Run DSH model requests through your signed-in ZCode CLI, with real streaming, image input and account-derived model catalogs.</p>
+
+<p align="center"><a href="https://github.com/tangyixiao/dsh-zcode-plan-bridge"><img src="docs/assets/banner-en.svg" width="100%" alt="ZCode Plan Bridge — Project and usage guide"></a></p>
 
 <p align="center"><a href="README.md">简体中文</a> · <a href="README.en.md">English</a></p>
 
