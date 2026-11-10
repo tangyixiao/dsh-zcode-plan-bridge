@@ -59,7 +59,7 @@
     "@deepseek-ai/dsh-attachment": "0.2.2-rc.1",
     "@deepseek-ai/dsh-llm": "0.2.2-rc.1",
     "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.1",
-    "@deepseek-ai/schemastery": "3.18.5",
+    "@deepseek-ai/schemastery": "3.19.0",
     "@types/node": "^24.0.0",
     "typescript": "^7.0.2",
     "semver": "^7.8.5"
