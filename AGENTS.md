@@ -15,3 +15,7 @@ Preserve unrelated dirty files, credentials, local accounts and preview installa
 Run `node tools/check-repository.mjs` plus the relevant commands in CONTRIBUTING.md. Keep source, local checks, CI, merge, registry publication, deployment and actual runtime use separate. A green catalog or a local account file does not prove live inference. Do not create empty releases or fake progress, stars or compatibility claims.
 
 Keep English/Chinese README entry pages consistent. Readme feature cards are descriptive diagrams, not application screenshots. Preserve artwork attribution and separate artwork terms from software licenses. For a new website or substantial redesign, inspect real references, present a visual overview and obtain explicit selection before implementation; routine fixes within an approved direction continue directly.
+
+## Dependency update attribution
+
+Follow [the dependency update and co-authorship procedure](CONTRIBUTING.md#dependency-updates-and-co-authorship--依赖更新与联合署名) for Dependabot PRs. Record actual maintainer participation, verify GitHub-linked contributor emails, preserve valid author/co-author credit in the final squash message, and read back the merged commit on the default branch. Keep checks, merge, attribution, contribution-graph visibility and achievements distinct. This procedure does not authorize automatic merging or history rewrites.
