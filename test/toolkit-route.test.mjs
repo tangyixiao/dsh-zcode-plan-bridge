@@ -34,5 +34,7 @@ test('owner can read and mutate only with exact origin, control key and closed b
   assert.equal((await h.post(' '.repeat(16385))).status, 413)
   assert.equal((await h.post(action)).status, 200)
   assert.equal(h.calls.length, 1)
+  const forwarded = await fetch(h.url, { method: 'POST', headers: { 'content-type': 'application/json', 'x-zcode-toolkit-key': 'test-key' }, body: JSON.stringify(action) })
+  assert.equal(forwarded.status, 200, 'authenticated Desktop forwarding strips Origin')
   assert.equal((await fetch(h.url, { headers: { 'sec-fetch-site': 'cross-site' } })).status, 403)
 })
