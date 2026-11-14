@@ -30,7 +30,7 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.1` · 以 [package.json](package.json) 为准 |
+| Source version | `0.6.2-toolkit.1` toolkit candidate · public install examples retain published `0.6.1` · see [package.json](package.json) |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1` |
 | Node.js | `>=22` |
@@ -39,6 +39,14 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 A readable catalog, a loaded plugin and successful inference are separate facts. Preserve an existing `0.6.0-community.*` preview installation rather than replacing it with a stable channel.
 
 [Native Retry guide](community/README.md)
+
+## ZCode toolkit candidate
+
+`0.6.2-toolkit.1` adds a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+
+Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
+
+[Toolkit guide / 工具箱说明](docs/toolkit.md) · [Acceptance record](docs/toolkit-acceptance.md). Source tests, installation/activation and live inference remain separate evidence. The unpublished candidate does not replace the stable installation example above.
 
 ## Development and participation
 

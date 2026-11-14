@@ -2,6 +2,8 @@
 
 命令均从仓库根目录执行。返回 [README](../README.md)。
 
+工具箱候选 `0.6.2-toolkit.1` 的操作、设置优先级和验收边界见 [工具箱指南（中英文）](toolkit.md)；以下 `0.6.1` 为已发布稳定版本及其历史记录。
+
 <p><img src="../assets/logo.webp" width="96" height="96" alt="dsh-zcode-plan-bridge logo"></p>
 
 # dsh-zcode-plan-bridge
