@@ -1,6 +1,6 @@
 # ZCode toolkit / ZCode 工具箱
 
-Source candidate: **0.6.2-toolkit.3**. This is separate from published stable **0.6.1**, community previews, package installation, runtime activation and successful generation. / 本轮工具箱候选与稳定版、社区预览、安装、实际加载和真实生成分别记录。
+Source candidate: **0.6.2-toolkit.4**. This is separate from published stable **0.6.1**, community previews, package installation, runtime activation and successful generation. / 本轮工具箱候选与稳定版、社区预览、安装、实际加载和真实生成分别记录。
 
 ## 使用
 
@@ -20,6 +20,10 @@ Source candidate: **0.6.2-toolkit.3**. This is separate from published stable **
 隔离键包含数据根目录、套餐通道及本地凭证版本的不可逆摘要。不信任未验证 JWT 中的用户声明；凭证刷新可能建立新的偏好空间。账号或通道变化后，空闲旧子进程和缓存失效；有请求时拒绝新的冲突操作。旧界面的 scope/revision 不能覆盖新状态。文件损坏、锁占用或超出 64 个偏好空间/256 KiB 上限时明确失败，不擅自清空旧设置。
 
 ## CLI
+
+新版 ZCode 的 `enc:v2:os` 凭证使用客户端已有的系统密钥，桥接只读该安装自带的 keyring 模块与指定密钥条目，并核对密钥指纹和 AES-GCM 认证；不创建、重置、迁移或导出登录。旧 `enc:v1` 与显式 `enc:v2:env` 继续支持。未知加密版本不再当成明文；密钥不可读会明确失败。共享登录已升级时，CLI 内核也必须支持 v2，不能继续使用 3.17.1 内核。
+
+ZCode v2 credentials use the existing client OS key, via its installed keyring and the exact credential-file entry. The bridge validates the key fingerprint and authenticated cipher, performs no key/credential writes, preserves v1 and explicit env-source support, and rejects unknown encryption versions. A migrated login also requires a compatible CLI; an old 3.17.1 kernel is insufficient.
 
 ```sh
 node bin/dsh-zcode-plan-bridge.js status --json --account-mode start-plan
