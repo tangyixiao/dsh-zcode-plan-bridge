@@ -20,7 +20,8 @@ test('v2 envelopes decrypt with their exact key fingerprint and never pass ciphe
   assert.throws(() => decryptValue('enc:v2:os:malformed', key), { code: 'CIPHER_FORMAT' })
 })
 test('v2 OAuth reads the existing OS key once and never modifies credentials or key stores', t => {
-  const scratch = fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
+  const scratch = process.env.ZCODE_TEST_SCRATCH || fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
+  fs.mkdirSync(scratch, { recursive: true })
   const dir = fs.mkdtempSync(path.join(scratch, 'credentials-v2-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
   const root = path.join(dir, '.zcode/v2'); fs.mkdirSync(root, { recursive: true })
   const file = path.join(root, 'credentials.json')
@@ -36,7 +37,8 @@ test('v2 OAuth reads the existing OS key once and never modifies credentials or 
 })
 
 test('v2 explicit environment source uses the native untrimmed secret without touching a key store', t => {
-  const scratch = fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
+  const scratch = process.env.ZCODE_TEST_SCRATCH || fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
+  fs.mkdirSync(scratch, { recursive: true })
   const dir = fs.mkdtempSync(path.join(scratch, 'credentials-v2-env-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
   const root = path.join(dir, '.zcode/v2'); fs.mkdirSync(root, { recursive: true })
   const prior = process.env.ZCODE_CREDENTIAL_SECRET, priorFile = process.env.ZCODE_CREDENTIAL_SECRET_FILE
