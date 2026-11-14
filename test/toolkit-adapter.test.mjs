@@ -67,9 +67,6 @@ test('a reused session receives an explicit reasoning change and observations ke
   const { adapter, runtime } = harness(t)
   const messages = [{ role: 'user', content: [{ type: 'text', text: 'private prompt' }] }]
   let first = true; const selected = []
-  adapter.ensureSession = async () => ({ sessionId: 'private-session', firstTurn: false, providerId: 'plan', modelId: 'first', reasoningLevel: 'low', sentLength: 1,
-    // Force history rebuild, then have replacement represent the real first turn.
-    sentFingerprint: '' })
   let calls = 0
   adapter.ensureSession = async () => {
     calls++
@@ -103,4 +100,64 @@ test('a reused session receives an explicit reasoning change and observations ke
   assert.deepEqual(selected, ['high'])
   assert.deepEqual(runtime.log.read(runtime.scope())[0].usage, { inputTokens: 0, outputTokens: 2 })
   assert.doesNotMatch(JSON.stringify(runtime.log.read(runtime.scope())), /private/)
+})
+
+test('abort releases toolkit admission after native cleanup even if the consumer stops pulling', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const { adapter, runtime } = harness(t)
+  const controller = new AbortController()
+  adapter.ensureSession = async () => ({ sessionId: 'paused', firstTurn: true })
+  adapter.stopTurn = async () => true
+  adapter.client.request = async method => {
+    if (method === 'session/send') adapter.client.onData(JSON.stringify({ method: 'session/event', params: { sessionId: 'paused', type: 'model.streaming', payload: { kind: 'text_delta', delta: 'text' } } }) + '\n')
+    return {}
+  }
+  const stream = adapter.stream({ provider: 'zcode-cli', model: 'alias', sessionId: 'paused', messages: [], signal: controller.signal })
+  const first = stream.next()
+  await setImmediate(); t.mock.timers.tick(1500); await setImmediate(); await first
+  controller.abort(); await setImmediate()
+  assert.equal(adapter.toolkitStatus().queuedOrActive, 0)
+  await adapter.clearIdleCaches()
+  assert.equal(runtime.log.read(runtime.scope())[0].result, 'cancelled')
+  await stream.return()
+  assert.equal(adapter.toolkitStatus().queuedOrActive, 0)
+  assert.equal(runtime.log.read(runtime.scope()).length, 1)
+})
+
+test('new native sessions reject failed effort synchronization instead of caching an unapplied effort', async t => {
+  const { adapter } = harness(t)
+  const frames = []
+  adapter.client.ensureStarted = async () => {}
+  adapter.client.request = async method => {
+    frames.push(method)
+    if (method === 'session/create') return { session: { sessionId: 'new' } }
+    if (method === 'session/setModel') throw new Error('upstream refused effort')
+    return {}
+  }
+  await assert.rejects(adapter.ensureSession('new', 'alias', undefined, 'high'), /模型或推理设置失败/)
+  assert.equal(adapter.sessions.size, 0)
+  assert.ok(!frames.includes('session/send'))
+})
+
+test('a reused session refuses sending when a requested effort change is rejected', async t => {
+  const { adapter } = harness(t)
+  const frames = []
+  const session = { sessionId: 'reused', firstTurn: false, providerId: 'plan', modelId: 'first', reasoningLevel: 'low', sentLength: 1, sentFingerprint: 'same' }
+  adapter.ensureSession = async () => session
+  const messages = [{ role: 'user', content: [{ type: 'text', text: 'hello' }] }]
+  // A first real stream supplies the correct fingerprint, then rejects the second model switch.
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  session.firstTurn = true
+  adapter.client.request = async method => {
+    frames.push(method)
+    if (method === 'session/setModel') throw new Error('refused')
+    if (method === 'session/send') adapter.client.onData(JSON.stringify({ method: 'session/event', params: { sessionId: 'reused', type: 'turn.completed', payload: { resultType: 'success', response: 'ok' } } }) + '\n')
+    return {}
+  }
+  const first = (async () => { for await (const _ of adapter.stream({ provider: 'zcode-cli', model: 'alias', sessionId: 'reused', messages })) {} })()
+  await setImmediate(); t.mock.timers.tick(1500); await setImmediate(); await first
+  frames.length = 0
+  await assert.rejects(async () => { for await (const _ of adapter.stream({ provider: 'zcode-cli', model: 'alias', reasoningEffort: 'high', sessionId: 'reused', messages })) {} }, /模型或推理设置失败/)
+  assert.deepEqual(frames, ['session/setModel'])
+  assert.equal(session.reasoningLevel, 'low')
 })
