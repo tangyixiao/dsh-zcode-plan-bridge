@@ -21,7 +21,7 @@
 Desktop: install the release `.tgz` through Extensions → Plugin Management → Add Plugin. For a Web profile you explicitly control:
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.1
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.2
 ```
 
 Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accountMode: start-plan` explicitly for that channel; a billing error alone does not mean a top-up is needed.
@@ -30,9 +30,9 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.1` · 以 [package.json](package.json) 为准 |
+| Source version | `0.6.2` · 以 [package.json](package.json) 为准 |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
-| DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1` |
+| DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3` |
 | Node.js | `>=22` |
 | Development | [Open issues](https://github.com/tangyixiao/dsh-zcode-plan-bridge/issues?q=is%3Aissue+is%3Aopen) · [CI](https://github.com/tangyixiao/dsh-zcode-plan-bridge/actions) |
 
