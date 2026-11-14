@@ -1,6 +1,6 @@
 # Toolkit acceptance / 工具箱验收
 
-Candidate: **0.6.2-toolkit.2**, 2026-11-14, Windows x64. This record is updated with concrete outcomes; an unlisted or pending boundary is not accepted.
+Candidate: **0.6.2-toolkit.3**, 2026-11-14, Windows x64. This record is updated with concrete outcomes; an unlisted or pending boundary is not accepted.
 
 | Boundary | Evidence |
 | --- | --- |

@@ -62,6 +62,14 @@ test('settings write detects a scope change during an asynchronous model read', 
   await assert.rejects(runtime.action({ action: 'settings', scope: old.scope, revision: old.settings.revision, patch: { hiddenModels: [] } }), /account-changed/)
 })
 
+test('Retry and permission preferences remain editable without an available model catalog', async t => {
+  const { runtime, adapter } = harness(t)
+  const state = await runtime.state()
+  adapter.allModels = async () => { throw new Error('catalog unavailable') }
+  await runtime.action({ action: 'settings', scope: state.scope, revision: state.settings.revision, patch: { retry: { enabled: true, mode: 'bounded', maxRetries: 2 } } })
+  assert.equal(runtime.options().communityRetry.config.maxRetries, 2)
+})
+
 test('a reused session receives an explicit reasoning change and observations keep missing usage unknown', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] })
   const { adapter, runtime } = harness(t)
