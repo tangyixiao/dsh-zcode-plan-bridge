@@ -1,6 +1,16 @@
 /** Browser-only source. The deterministic wrapper requires React from the DSH host. */
 export const messages = {
   zh: {
+    accounts: '账号管理 · Z·SWITCH', accountUnavailable: '未连接 Z·SWITCH。请先安装并保存账号；可在插件配置中填写程序路径，然后刷新。',
+    accountIndependent: '独立模式：只在 DSH 使用所选账号（默认）', accountShared: '共同模式：DSH 与 ZCode 同步换号',
+    accountScope: '切换范围', accountScopeHint: '独立模式保留 ZCode 当前登录；共同模式会更改 ZCode 登录，不会强制退出或重启客户端。',
+    accountCurrent: 'DSH 当前账号', accountPrimary: '主选账号', accountDesktop: 'ZCode 当前登录', accountFollow: '跟随 ZCode', accountSave: '保存 ZCode 当前登录',
+    accountName: '账号名称', accountSwitch: '使用此账号', accountRename: '改名', accountUpdate: '更新保存的登录', accountDelete: '删除', accountQuota: '查额度',
+    accountDeleteConfirm: '从 Z·SWITCH 账号库删除这个账号？', accountExpired: '登录可能已过期', accountExhausted: '已确认额度耗尽', accountReset: '恢复参与轮换',
+    accountAutomatic: '额度耗尽后自动换号', accountOrder: '参与顺序', accountParticipate: '参与自动换号', accountUp: '提前', accountDown: '后移',
+    accountPending: '当前回合结束后，等待下一次独立请求换号', accountReplayHint: '失败任务不会跨账号自动重跑。请发送新消息；需要重试原任务时，先明确选择账号或重置耗尽状态。',
+    accountAddHint: '复用 Z·SWITCH 已有账号库。新增登录请在 Z·SWITCH 的“添加”中完成，再刷新这里。', accountEmpty: '还没有保存的账号。', accountHistory: '最近自动切换',
+    accountIsolationUnavailable: '独立账号不可用：需要支持隔离的 npm ZCode CLI、可用的系统密钥存储和有效登录快照。请核对安装或重新保存登录。', accountError: '账号操作未完成，请刷新状态后重试；不会强制重启 ZCode。',
     credentialReadable: '本机可读', credentialUnavailable: '不可读取', runtimeStopped: '尚未启动', runtimeStarting: '正在启动', runtimeRunning: '运行中', runtimeDisposed: '已停用',
     authentication: '认证失败', channelFailure: '通道或边缘拦截', quota: '额度限制', throttled: '请求限流', entitlement: '权限或套餐权益', timeout: '请求超时', provider: '上游错误', noBalances: '接口未返回余额桶；当前没有可展示的额度数据。',
     title: 'ZCode 工具箱', intro: '管理原生通道、模型与重试，查看实际观察到的运行状态。', refresh: '刷新状态', refreshCatalog: '刷新模型目录', refreshPlan: '刷新 Start Plan 套餐',
@@ -14,6 +24,16 @@ export const messages = {
     failed: '操作未完成', applied: '设置已应用', busy: '有请求运行、排队或目录刷新，待空闲后再操作。', stale: '账号或设置已变化，已刷新状态，请重新选择。', actionFailed: '操作未完成，请检查本地诊断；未自动重试。', unsupported: '所选配置不受当前目录或通道支持。', unit: '单位', remaining: '剩余', used: '已用', total: '总量', observed: '观察时间', generationScope: '设置按账号凭证与通道隔离；凭证更新后使用新的设置空间。', true: '支持', false: '未声明', success: '成功', failure: '失败', cancelled: '已取消', incomplete: '未完成',
   },
   en: {
+    accounts: 'Accounts · Z·SWITCH', accountUnavailable: 'Z·SWITCH is unavailable. Install it and save accounts, or configure its executable path, then refresh.',
+    accountIndependent: 'Independent: use the selected account only in DSH (default)', accountShared: 'Shared: switch both DSH and ZCode login',
+    accountScope: 'Switch scope', accountScopeHint: 'Independent mode preserves the ZCode login. Shared mode changes it without forcing Desktop to exit or restart.',
+    accountCurrent: 'Serving DSH account', accountPrimary: 'Primary account', accountDesktop: 'ZCode login', accountFollow: 'Follow ZCode', accountSave: 'Save current ZCode login',
+    accountName: 'Account name', accountSwitch: 'Use account', accountRename: 'Rename', accountUpdate: 'Update saved login', accountDelete: 'Delete', accountQuota: 'Check quota',
+    accountDeleteConfirm: 'Delete this account from the Z·SWITCH library?', accountExpired: 'Login may have expired', accountExhausted: 'Confirmed quota exhaustion', accountReset: 'Re-enable for rotation',
+    accountAutomatic: 'Switch accounts after quota exhaustion', accountOrder: 'Participation order', accountParticipate: 'Include in automatic switching', accountUp: 'Earlier', accountDown: 'Later',
+    accountPending: 'Waiting for the next independent request after this turn drains', accountReplayHint: 'Failed tasks are never replayed automatically on another account. Send a new message; explicitly select an account or reset exhaustion before retrying unchanged input.',
+    accountAddHint: 'Uses the existing Z·SWITCH library. Add new logins through its Add action, then refresh here.', accountEmpty: 'No saved accounts.', accountHistory: 'Recent automatic switches',
+    accountIsolationUnavailable: 'Independent accounts need a compatible npm ZCode CLI, protected OS key storage and a valid snapshot. Check the installation or save the login again.', accountError: 'Account action incomplete. Refresh state before retrying; ZCode will not be forcibly restarted.',
     credentialReadable: 'Locally readable', credentialUnavailable: 'Unavailable', runtimeStopped: 'Not started', runtimeStarting: 'Starting', runtimeRunning: 'Running', runtimeDisposed: 'Disposed',
     authentication: 'Authentication failure', channelFailure: 'Channel or edge failure', quota: 'Quota limit', throttled: 'Throttled', entitlement: 'Permission or plan entitlement', timeout: 'Timed out', provider: 'Provider error', noBalances: 'No balance buckets were returned. No quota value is available to display.',
     title: 'ZCode Toolkit', intro: 'Manage the native channel, models and retries, with observed runtime facts.', refresh: 'Refresh status', refreshCatalog: 'Refresh model catalog', refreshPlan: 'Refresh Start Plan',
@@ -33,7 +53,14 @@ export function parseToolkitState(value) {
   if (!value || !/^[a-f0-9]{64}$/u.test(value.scope) || typeof value.key !== 'string' || value.key.length < 1 || value.key.length > 128
     || !value.settings || !/^(initial|[a-f0-9-]{36})$/u.test(value.settings.revision) || !Array.isArray(value.models) || value.models.length > 256
     || !value.runtime || !value.retry || !Array.isArray(value.settings.hiddenModels) || !value.settings.reasoning || !value.diagnostic) return undefined
+  if (value.accounts?.available === true && (!/^[a-f0-9]{64}$/u.test(value.accounts.revision) || !['independent','shared'].includes(value.accounts.mode)
+    || !Array.isArray(value.accounts.accounts) || value.accounts.accounts.length > 100 || !value.accounts.accounts.every((/** @type {any} */ item) => /^[A-Za-z0-9-]{1,100}$/u.test(item.id) && typeof item.name === 'string' && item.name.length <= 120)
+    || !['order','exhausted','history'].every(key => Array.isArray(value.accounts[key])))) return undefined
   return value
+}
+/** @param {any} state @param {string} operation @param {any} [params] */
+export function makeAccountAction(state, operation, params = {}) {
+  return { action: 'accounts', scope: state.scope, revision: state.settings.revision, account: { operation, revision: state.accounts.revision, ...params } }
 }
 /** @param {any} state @param {string} action @param {any} [patch] */
 export function makeAction(state, action, patch) {
@@ -77,6 +104,53 @@ export function createToolkitClient(React) {
   }
 
   /** @param {any} props */
+  function AccountsPanel({ state, busy, request, t }) {
+    const [name, setName] = React.useState('')
+    const [names, setNames] = React.useState({})
+    const a = state.accounts
+    if (!a?.available) return section(t('accounts'), h('p', { style: small }, t('accountUnavailable')))
+    const label = (/** @type {string} */ id) => a.accounts.find((/** @type {any} */ item) => item.id === id)?.name ?? t('unknown')
+    const act = (/** @type {string} */ operation, /** @type {any} */ params = {}) => { void request(makeAccountAction(state, operation, params)) }
+    const policy = (/** @type {any} */ changes) => act('policy', { enabled: a.enabled, order: a.order, mode: a.mode, ...changes })
+    const button = (/** @type {string} */ key, /** @type {()=>void} */ click, disabled = false) => h('button', { type: 'button', style: control, disabled: busy || disabled, onClick: click }, t(key))
+    const move = (/** @type {string} */ id, /** @type {number} */ delta) => {
+      const order = [...a.order], index = order.indexOf(id)
+      if (index < 0 || index + delta < 0 || index + delta >= order.length) return
+      ;[order[index], order[index + delta]] = [order[index + delta], order[index]]
+      policy({ order })
+    }
+    return section(t('accounts'),
+      a.profileUnavailable ? h('p', { style: small, role: 'alert' }, t('accountIsolationUnavailable')) : null,
+      h('label', { style: column }, t('accountScope'), h('select', { style: control, value: a.mode, disabled: busy, onChange: (/** @type {any} */ event) => policy({ mode: event.target.value, enabled: false }) },
+        h('option', { value: 'independent' }, t('accountIndependent')), h('option', { value: 'shared' }, t('accountShared')))),
+      h('p', { style: small }, t('accountScopeHint')),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,170px),1fr))', gap: 8 } }, fact(t, 'accountCurrent', label(a.activeId)), fact(t, 'accountPrimary', label(a.primaryId)), fact(t, 'accountDesktop', label(a.desktopId))),
+      h('div', { style: row }, button('accountFollow', () => act('follow'), a.following && !a.enabled)),
+      h('form', { style: row, onSubmit: (/** @type {any} */ event) => { event.preventDefault(); if (name.trim()) act('capture', { name: name.trim() }) } },
+        h('input', { style: { ...control, flex: '1 1 160px', minWidth: 0 }, value: name, maxLength: 80, disabled: busy, placeholder: t('accountName'), 'aria-label': t('accountName'), onChange: (/** @type {any} */ event) => setName(event.target.value) }),
+        h('button', { type: 'submit', style: control, disabled: busy || !name.trim() }, t('accountSave'))),
+      h('p', { style: small }, t('accountAddHint')),
+      !a.accounts.length ? h('p', { style: small }, t('accountEmpty')) : h('div', { style: column }, ...a.accounts.map((/** @type {any} */ item) => {
+        const index = a.order.indexOf(item.id)
+        return h('div', { key: item.id, style: { ...column, padding: 12, border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 10 } },
+          h('div', { style: { ...row, justifyContent: 'space-between' } }, h('strong', { style: { overflowWrap: 'anywhere' } }, `${item.id === a.activeId ? '● ' : ''}${item.name}`), h('span', { style: small }, item.provider)),
+          item.expired || a.exhausted.includes(item.id) ? h('p', { style: small }, t(a.exhausted.includes(item.id) ? 'accountExhausted' : 'accountExpired')) : null,
+          h('div', { style: row }, button('accountSwitch', () => act('select', { id: item.id }), item.id === a.activeId && !a.following), button('accountQuota', () => act('quota', { id: item.id })), button('accountUpdate', () => act('update', { id: item.id })),
+            button('accountDelete', () => { if (window.confirm(t('accountDeleteConfirm'))) act('delete', { id: item.id }) }, [a.activeId, a.desktopId].includes(item.id)),
+            a.exhausted.includes(item.id) ? button('accountReset', () => act('reset', { id: item.id })) : null),
+          h('div', { style: row }, h('input', { style: { ...control, flex: '1 1 160px', minWidth: 0 }, value: names[item.id] ?? item.name, maxLength: 80, disabled: busy, 'aria-label': `${t('accountName')} ${item.name}`, onChange: (/** @type {any} */ event) => setNames({ ...names, [item.id]: event.target.value }) }), button('accountRename', () => act('rename', { id: item.id, name: (names[item.id] ?? item.name).trim() }), !(names[item.id] ?? item.name).trim())),
+          h('div', { style: row }, h('label', { style: row }, h('input', { type: 'checkbox', disabled: busy || (a.enabled && a.order.length === 1 && index >= 0), checked: index >= 0, onChange: (/** @type {any} */ event) => policy({ order: event.target.checked ? [...a.order, item.id] : a.order.filter((/** @type {string} */ id) => id !== item.id) }) }), t('accountParticipate')),
+            index >= 0 ? h('span', { style: small }, `${index + 1}`) : null, index >= 0 ? button('accountUp', () => move(item.id, -1), index === 0) : null, index >= 0 ? button('accountDown', () => move(item.id, 1), index === a.order.length - 1) : null),
+          item.quota ? h('div', { style: column }, h('p', { style: small }, `${t('observed')}: ${new Date(item.quota.observedAt).toLocaleString()}`), ...(item.quota.items ?? []).map((/** @type {any} */ q, /** @type {number} */ qi) => h('p', { key: qi, style: small }, `${q.name ?? t('unknown')}: ${t('remaining')} ${q.remaining ?? t('unknown')} / ${q.total ?? t('unknown')} ${q.unit ?? ''}${q.reset ? ` · ${q.reset}` : ''}`)), !item.quota.items?.length ? h('p', { style: small }, t('noBalances')) : null) : null)
+      })),
+      h('label', { style: row }, h('input', { type: 'checkbox', disabled: busy || !a.order.length, checked: a.enabled, onChange: (/** @type {any} */ event) => policy({ enabled: event.target.checked }) }), t('accountAutomatic')),
+      h('p', { style: small }, `${t('accountOrder')}: ${a.order.map(label).join(' → ') || t('empty')}`),
+      a.pending ? h('p', { style: small, role: 'status' }, t('accountPending')) : null,
+      h('p', { style: small }, t('accountReplayHint')),
+      a.history.length ? h('details', null, h('summary', null, t('accountHistory')), ...a.history.slice().reverse().map((/** @type {any} */ event, /** @type {number} */ index) => h('p', { key: index, style: small }, `${new Date(event.at).toLocaleString()} · ${label(event.from)} → ${label(event.to)} · ${t('quota')}`))) : null)
+  }
+
+  /** @param {any} props */
   function ToolkitPanel({ t, view }) {
     const [state, setState] = React.useState(null)
     const [pending, setPending] = React.useState(false)
@@ -97,7 +171,7 @@ export function createToolkitClient(React) {
             headers: { 'content-type': 'application/json', 'x-zcode-toolkit-key': current.current.key }, body: JSON.stringify(action) })
           if (!response.ok) {
             const error = await response.json().catch(() => ({}))
-            setFailed(true); setNotice(['stale-state', 'account-changed'].includes(error.error) ? 'stale' : error.error === 'runtime-busy' ? 'busy' : ['unsupported-reasoning', 'unsupported-channel', 'no-selectable-models'].includes(error.error) ? 'unsupported' : ['authentication', 'quota', 'throttled', 'entitlement', 'timeout', 'provider'].includes(error.category) ? error.category : error.category === 'channel' ? 'channelFailure' : 'actionFailed')
+            setFailed(true); setNotice(['stale-state', 'account-changed'].includes(error.error) ? 'stale' : error.error === 'runtime-busy' ? 'busy' : ['account-isolation-unavailable','account-keyring-unavailable','account-snapshot-unavailable','account-profile-invalid','account-profile-boundary'].includes(error.error) ? 'accountIsolationUnavailable' : action.action === 'accounts' ? 'accountError' : ['unsupported-reasoning', 'unsupported-channel', 'no-selectable-models'].includes(error.error) ? 'unsupported' : ['authentication', 'quota', 'throttled', 'entitlement', 'timeout', 'provider'].includes(error.category) ? error.category : error.category === 'channel' ? 'channelFailure' : 'actionFailed')
           } else setNotice('applied')
         }
         const response = await fetch(route, { credentials: 'same-origin', signal: controller.signal })
@@ -127,6 +201,7 @@ export function createToolkitClient(React) {
           h('p', { style: small }, t('localOnly')), h('p', { style: small }, t('generationScope')),
           state.accountMode === 'start-plan' ? h('div', { style: row }, button('refreshPlan', () => act('refresh-plan'), busy)) : null,
           state.plan ? h('div', { style: column }, h('p', { style: small }, `${t('observed')}: ${new Date(state.plan.observedAt).toLocaleString()}`), !state.plan.balances.length ? h('p', { style: small }, t('noBalances')) : null, ...(state.plan.balances.length ? state.plan.balances : []).map((/** @type {any} */ balance, /** @type {number} */ index) => h('div', { key: index, style: { ...column, gap: 6 } }, h('strong', null, balance.name ?? t('unknown')), h('div', { style: grid }, ...['remaining', 'used', 'total'].map(key => fact(t, key, balance[`${key}Units`]))), h('p', { style: small }, `${t('unit')}: ${balance.unitType ?? t('unknown')}`)))) : null),
+        h(AccountsPanel, { state, busy, request, t }),
         section(t('models'), h('div', { style: row }, button('refreshCatalog', () => act('refresh-catalog'), busy)),
           state.models.length === 0 ? h('p', { style: small }, t('noModels')) : h('div', { style: column }, ...state.models.map((/** @type {any} */ model) => h('div', { key: model.id, style: { ...column, padding: 12, border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 10 } },
             h('div', { style: { ...row, justifyContent: 'space-between' } }, h('strong', { style: { overflowWrap: 'anywhere' } }, model.name), h('label', { style: row }, h('input', { type: 'checkbox', checked: model.visible, disabled: busy || (model.visible && state.models.filter((/** @type {any} */ item) => item.visible).length === 1), 'aria-label': `${t('visible')} ${model.name}`,
