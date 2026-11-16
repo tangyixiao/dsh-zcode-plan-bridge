@@ -21,7 +21,7 @@
 Desktop: install the release `.tgz` through Extensions → Plugin Management → Add Plugin. For a Web profile you explicitly control:
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.1
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
 ```
 
 Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accountMode: start-plan` explicitly for that channel; a billing error alone does not mean a top-up is needed.
@@ -30,7 +30,7 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.3-accounts.1` accounts candidate · public install examples retain published `0.6.1` · see [package.json](package.json) |
+| Source version | `0.6.3` · see [package.json](package.json) |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3` |
 | Node.js | `>=22` |
@@ -40,15 +40,15 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 [Native Retry guide](community/README.md)
 
-## ZCode toolkit candidate
+## ZCode toolkit and accounts
 
-`0.6.3-accounts.1` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+`0.6.3` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
 
 Account controls reuse the existing [Z·SWITCH](https://github.com/pjpv/zcode-switch) library and commands. Independent mode changes only the DSH account by default; shared mode also changes the ZCode login. Save, rename, update, delete and manually query account quotas, or enable next-request switching after confirmed quota exhaustion. Failed agent tasks are never automatically replayed. See the [account guide](docs/zswitch-accounts.md).
 
 Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
 
-[Toolkit guide / 工具箱说明](docs/toolkit.md) · [Acceptance record](docs/toolkit-acceptance.md). Source tests, installation/activation and live inference remain separate evidence. The unpublished candidate does not replace the stable installation example above.
+[Toolkit guide / 工具箱说明](docs/toolkit.md) · [Acceptance record](docs/toolkit-acceptance.md). Source tests, installation/activation and live inference remain separate evidence. Historical acceptance records describe the versions actually tested.
 
 ## Development and participation
 
