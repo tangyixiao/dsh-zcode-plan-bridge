@@ -1,6 +1,6 @@
 {
   "name": "dsh-zcode-plan-bridge",
-  "version": "0.6.2",
+  "version": "0.6.2-toolkit.5",
   "description": "Exposes the ZCode CLI's bundled agent as a DeepSeek Harness model provider: streaming, image input, per-session reuse, and a model list read from the CLI instead of hard-coded. Derived from kyle123740/dsh-zcode-cli-proxy.",
   "license": "AGPL-3.0",
   "author": "kyle123740",
@@ -29,14 +29,17 @@
     "dsh-zcode-plan-bridge": "bin/dsh-zcode-plan-bridge.js"
   },
   "scripts": {
+    "build:client": "node tools/build-client.mjs",
+    "prepack": "npm run build:client",
     "test": "npm run test:offline",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
     "diagnose": "node bin/dsh-zcode-plan-bridge.js",
     "test:offline": "node scripts/test-offline.mjs",
     "test:native": "node --test --test-concurrency=1 test/community-cli.test.mjs test/community-native.test.mjs test/force-keeper-native.test.mjs",
     "test:all": "node --test --test-concurrency=1"
   },
   "exports": {
+    "./client": "./lib/client.js",
     ".": {
       "default": "./lib/index.js"
     },
@@ -44,6 +47,13 @@
     "./icon": "./assets/logo.webp"
   },
   "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-locale"
+      ],
+      "platform": "web"
+    },
     "bundle": {
       "patch": "./cordis.patch.yml"
     }

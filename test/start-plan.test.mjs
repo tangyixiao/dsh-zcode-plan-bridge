@@ -178,3 +178,12 @@ test('balance transport failure is distinct from a successful response without u
   await assert.rejects(startPlan.fetchStartPlanModels(builtin, directory, async () => new Response('', { status: 503 })), /balance request.*503/i)
   await assert.rejects(startPlan.fetchStartPlanModels(builtin, directory, async () => Response.json({ code: 0, data: { plans: [], balances: [] } })), /No active Start Plan model entitlements/)
 })
+
+test('manual balance status can show a successful empty plan while generation remains blocked', async t => {
+  const { directory, builtin } = requestFixture(t)
+  const transport = async () => Response.json({ code: 0, data: { plans: [], balances: [] } })
+  const status = await startPlan.fetchStartPlanStatus(builtin, directory, transport)
+  assert.deepEqual(status.models, [])
+  assert.deepEqual(status.balances, [])
+  await assert.rejects(startPlan.fetchStartPlanModels(builtin, directory, transport), /No active Start Plan model entitlements/)
+})

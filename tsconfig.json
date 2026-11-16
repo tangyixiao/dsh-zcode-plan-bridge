@@ -13,5 +13,6 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["lib/**/*.js", "bin/**/*.js"]
+  "include": ["lib/**/*.js", "bin/**/*.js"],
+  "exclude": ["lib/client.js"]
 }

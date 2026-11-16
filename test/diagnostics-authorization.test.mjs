@@ -16,7 +16,7 @@ test('the diagnostics help advertises the tool opt-in', () => {
 
 test('every documented command is listed exactly once', () => {
   const names = COMMANDS.map((entry) => entry.name)
-  assert.deepEqual(names, ['doctor', 'models', 'protocol', 'turn', 'image'])
+  assert.deepEqual(names, ['status', 'capabilities', 'doctor', 'models', 'protocol', 'turn', 'image'])
   assert.equal(new Set(names).size, names.length)
 })
 
