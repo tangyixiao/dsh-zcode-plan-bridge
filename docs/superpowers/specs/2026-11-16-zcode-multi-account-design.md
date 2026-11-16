@@ -1,6 +1,6 @@
 # ZCode accounts with Z·SWITCH
 
-Status: approved design, implemented in the 0.6.3-accounts.1 preview.
+Status: approved design, implemented in version 0.6.3.
 Date: 2026-11-16
 
 ## Purpose

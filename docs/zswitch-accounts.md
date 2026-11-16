@@ -1,6 +1,6 @@
 # 多账号 / Multiple accounts
 
-The `0.6.3-accounts.1` preview extends the existing toolkit rather than introducing another desktop account manager.
+Version `0.6.3` extends the existing toolkit rather than introducing another desktop account manager.
 
 ## 使用
 
@@ -22,6 +22,8 @@ The `0.6.3-accounts.1` preview extends the existing toolkit rather than introduc
 - 下一账号必须支持所选模型与套餐通道。不能满足时明确停止，不悄悄替换模型或走另一计费通道。请求、目录查询或账号操作未结束时，其他账号变更会提示忙碌。
 
 ## 独立运行的边界
+
+上下文超限会使用 DSH 标准错误码 `CONTEXT_WINDOW_EXCEEDED`，关闭并丢弃超限原生会话；不会把它当作额度耗尽换号，也不会静默截断对话。如果 DSH 提供的历史本身已超过窗口，请先压缩对话或新开会话再继续。错误识别与会话清理不等于真实对话已成功压缩。
 
 独立模式需要支持 `ZCODE_CLI_CREDENTIALS_FILE` 和 `ZCODE_CLI_SETTINGS_FILE` 的 npm ZCode 内核，以及可用的系统凭证存储。插件复用已安装的原生 keyring 模块，没有新的 npm 运行依赖。仅有不支持隔离的 Desktop 内核时明确提示不可用，不退回共同换号。
 

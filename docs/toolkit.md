@@ -1,6 +1,6 @@
 # ZCode toolkit / ZCode 工具箱
 
-Source candidate: **0.6.2-toolkit.4**. This is separate from published stable **0.6.1**, community previews, package installation, runtime activation and successful generation. / 本轮工具箱候选与稳定版、社区预览、安装、实际加载和真实生成分别记录。
+Source version: **0.6.3**. Package publication, installation, runtime activation and successful generation remain separate evidence. / 源码、发布、安装、实际加载和真实生成分别记录；历史验收保持对应原版本。
 
 ## 使用
 

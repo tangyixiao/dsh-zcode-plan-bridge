@@ -40,7 +40,7 @@ test('quota decision persists and only a new independent request consumes the pe
 })
 test('only structured quota 1113 arms a rotation; arbitrary messages and HTTP errors do not', async t => {
   const h=harness(t); await enable(h)
-  for(const evidence of [{message:'[1113] quota insufficient balance'}, {code:1113}, {providerErrorCode:429}, {providerErrorCode:'1302'}, {providerErrorCode:'401'}, {providerErrorCode:'1113',cancelled:true}, {providerErrorCode:'1113'}, {providerErrorCode:'1113',providerId:'custom-api'}]) {
+  for(const evidence of [{message:'[1113] quota insufficient balance'}, {code:1113}, {providerErrorCode:429}, {providerErrorCode:'1302'}, {providerErrorCode:'401'}, {providerErrorCode:'1113',cancelled:true}, {providerErrorCode:'1113'}, {providerErrorCode:'1113',providerId:'custom-api'}, {providerErrorCode:'1113',providerId:'account:zai-start-plan',contextExceeded:true}]) {
     await h.manager.failed(await h.manager.prepare(h.request('input')),evidence)
     assert.equal((await h.manager.state()).pending,null)
   }
