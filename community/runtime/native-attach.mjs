@@ -117,6 +117,11 @@ export async function connectInspector(url, Socket = WebSocket) {
   return { call, evaluate, close() { rejectPending(); socket.close() } }
 }
 
+/** Native installation arguments use CDP values, never executable interpolation. */
+export function nativeInstallCall(objectId, args, modulePath) {
+  return { objectId, returnByValue: true, functionDeclaration: "function(a,modulePath){const classes=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelExecution'&&typeof f.prototype?.resolveProviderTransport==='function'&&typeof f.prototype?.bindModel==='function'&&typeof f.prototype?.createFactory==='function'}catch{return false}});if(classes.length!==1)throw Error('Unsupported or ambiguous model execution transport');const adapters=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelAdapter'&&typeof f.prototype?.streamTextWithResolved==='function'&&typeof f.prototype?.generateTextWithResolved==='function'}catch{return false}});if(adapters.length!==1)throw Error('Unsupported native stream idle adapter');const r=process.mainModule.require.bind(process.mainModule),fs=r('node:fs');const s=fs.readFileSync(process.argv[1],'utf8');if(!s.includes('globalThis.fetch')||!s.includes('ZCODE_MODEL_RETRY_MAX_RETRIES'))throw Error('Unsupported Agent transport');const runtime=r(modulePath);a.settingsFile=runtime.resolveNativeSettingsFile(this);a.transportPrototypes=classes.map(f=>f.prototype);a.adapterPrototypes=adapters.map(f=>f.prototype);return runtime.installNativeRetry(a)}", arguments: [{ value: args }, { value: modulePath }] }
+}
+
 /** Only the plugin's direct Desktop Agent parent can be attached. */
 export async function attachNativeRetry({ dataDir, pluginId, leaseFile, cliPath }) {
   if (process.platform !== 'win32') return { active: false, reason: 'windows_only' }
@@ -128,13 +133,10 @@ export async function attachNativeRetry({ dataDir, pluginId, leaseFile, cliPath 
     if (directParentStartedAt() !== parent.startedAt) throw new Error('Native Agent process instance changed; no code installed')
     await client.evaluate('process.env.ZCODE_COMMUNITY_RETRY_NATIVE_PID=String(process.pid);true')
     // All arguments are JSON data, never shell interpolation. CJS mainModule owns require.
-    const args = JSON.stringify({ dataDir, pluginId, pluginPid: process.pid, leaseFile, pluginRoot: fileURLToPath(new URL('..', import.meta.url)), startedAt: parent.startedAt })
+    const args = { dataDir, pluginId, pluginPid: process.pid, leaseFile, pluginRoot: fileURLToPath(new URL('..', import.meta.url)), startedAt: parent.startedAt }
     const prototype = await client.call('Runtime.evaluate', { expression: 'Function.prototype', objectGroup: 'community-retry' })
     const functions = await client.call('Runtime.queryObjects', { prototypeObjectId: prototype.result.objectId, objectGroup: 'community-retry' })
-    const installed = await client.call('Runtime.callFunctionOn', {
-      objectId: functions.objects.objectId, returnByValue: true,
-      functionDeclaration: `function(){const classes=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelExecution'&&typeof f.prototype?.resolveProviderTransport==='function'&&typeof f.prototype?.bindModel==='function'&&typeof f.prototype?.createFactory==='function'}catch{return false}});if(classes.length!==1)throw Error('Unsupported or ambiguous model execution transport');const adapters=this.filter(f=>{try{return Object.getOwnPropertyDescriptor(f,'name')?.value==='AiSdkModelAdapter'&&typeof f.prototype?.streamTextWithResolved==='function'&&typeof f.prototype?.generateTextWithResolved==='function'}catch{return false}});if(adapters.length!==1)throw Error('Unsupported native stream idle adapter');const r=process.mainModule.require.bind(process.mainModule),fs=r('node:fs');const s=fs.readFileSync(process.argv[1],'utf8');if(!s.includes('globalThis.fetch')||!s.includes('ZCODE_MODEL_RETRY_MAX_RETRIES'))throw Error('Unsupported Agent transport');const a=${args},runtime=r(${JSON.stringify(runtime)});a.settingsFile=runtime.resolveNativeSettingsFile(this);a.transportPrototypes=classes.map(f=>f.prototype);a.adapterPrototypes=adapters.map(f=>f.prototype);return runtime.installNativeRetry(a)}`,
-    })
+    const installed = await client.call('Runtime.callFunctionOn', nativeInstallCall(functions.objects.objectId, args, runtime))
     const result = installed.result.value
     await client.call('Runtime.releaseObjectGroup', { objectGroup: 'community-retry' })
     return { ...result, pid, verified: true, cliPath: identity.cliPath ?? identity.argv[1], startedAt: parent.startedAt }

@@ -19,6 +19,12 @@ test('v2 envelopes decrypt with their exact key fingerprint and never pass ciphe
   assert.throws(() => decryptValue('enc:v9:unknown', key), { code: 'CIPHER_VERSION' })
   assert.throws(() => decryptValue('enc:v2:os:malformed', key), { code: 'CIPHER_FORMAT' })
 })
+
+test('native v2 fingerprints accept only a 256-bit cipher key, never a password-shaped input',()=>{
+  for(const invalid of [Buffer.alloc(16),'password-shaped-input']) {
+    assert.throws(()=>decryptValue(seal('token'),invalid),error=>error.code==='CIPHER_KEY'&&/256/.test(error.message))
+  }
+})
 test('v2 OAuth reads the existing OS key once and never modifies credentials or key stores', t => {
   const scratch = process.env.ZCODE_TEST_SCRATCH || fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
   fs.mkdirSync(scratch, { recursive: true })
