@@ -21,7 +21,7 @@
 Desktop：从发行页下载 `.tgz`，在“扩展 → 插件管理 → 添加插件”中安装。命令行示例用于你明确控制的 Web profile：
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.4
 ```
 
 先在 ZCode CLI 完成登录；在 DSH 中选择 `ZCode CLI` 模型组。需要 Start Plan 时显式设置 `accountMode: start-plan`，不要把余额错误直接当成需要充值。
@@ -30,7 +30,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
 
 | 项目 | 当前依据 |
 | --- | --- |
-| 源码版本 | `0.6.3` · 以 [package.json](package.json) 为准 |
+| 源码版本 | `0.6.4` · 以 [package.json](package.json) 为准 |
 | 分发方式 | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3` |
 | Node.js | `>=22` |
@@ -42,7 +42,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
 
 ## ZCode 工具箱与多账号
 
-`0.6.3` 提供中英文工具箱：本地状态与 Start Plan 套餐刷新、模型显示与默认推理、会话与 Retry 管理、近期 token / 错误观测和可分享诊断。沿用现有 `zcode-cli` 接入，缺少宿主界面或认证服务时保留命令行与模型提供方。
+`0.6.4` 提供中英文工具箱：本地状态与 Start Plan 套餐刷新、模型显示与默认推理、会话与 Retry 管理、近期 token / 错误观测和可分享诊断。沿用现有 `zcode-cli` 接入，缺少宿主界面或认证服务时保留命令行与模型提供方。
 
 会话标题请求使用模型生成摘要，通过独立的临时原生会话执行并在结束后关闭；不会把提示词前缀当作生成结果，也不会复用主聊天的原生会话。宿主的标题生成输入上限与超时仍由原版标题插件控制。
 
