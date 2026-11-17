@@ -1,10 +1,12 @@
 # ZCode toolkit / ZCode 工具箱
 
-Source version: **0.6.3**. Package publication, installation, runtime activation and successful generation remain separate evidence. / 源码、发布、安装、实际加载和真实生成分别记录；历史验收保持对应原版本。
+Source version: **0.6.4**. Package publication, installation, runtime activation and successful generation remain separate evidence. / 源码、发布、安装、实际加载和真实生成分别记录；历史验收保持对应原版本。
 
 ## 使用
 
-在 DSH 中进入「扩展管理 → 插件管理 → ZCode Plan Bridge → 配置」。新面板使用宿主现有布局与主题，支持中文、英文及窄屏；缺少配置插槽时继续使用原有 schema 设置与 CLI。工具箱控制需要提供 `webServer` 和 `connection.admit` 的宿主，依据 DSH **0.2.2-rc.1** 合同接入；不因此扩大宿主兼容声明。
+在 DSH 中进入「扩展管理 → 插件管理 → ZCode Plan Bridge → 配置」。新面板使用宿主现有布局与主题，支持中文、英文及窄屏；缺少配置插槽时继续使用原有 schema 设置与 CLI。工具箱控制需要提供 `webServer`、`connection.requestRejection` 和 `connection.admit` 的宿主；模型提供方的兼容范围不因此扩大。
+
+工具箱 HTTP 入口先同步调用宿主 `connection.requestRejection(req)`，仅 `undefined` 放行，`401` / `403` 原样拒绝；缺失、异常或无效返回（包括 Promise）均拒绝。检查先于主人身份准入、请求体读取、状态读取和账号/运行时动作。随后仍检查主人身份、任何提供的 Origin、进程控制密钥、方法、JSON 上限及 scope/revision；已通过宿主认证的 Desktop 转发可省略 Origin。宿主合同不满足时工具箱不可用，CLI 与模型提供方继续独立使用。
 
 1. **状态与套餐**：查看版本、运行状态、通道和本地凭证可读性。「刷新 Start Plan 套餐」手动请求现有 balance 接口，只展示实际返回的名称、单位、额度与观察时间。可读凭证不证明远端认证或生成成功；不同单位不合并、不换算费用。
 2. **模型**：「刷新模型目录」通过原生 app-server 读取目录，不发送生成请求。配置中的 `cliModels` 优先提供展示条目，随后应用隐藏设置；不能把所有当前模型隐藏。上游目录变化导致已显示模型全部消失时，恢复当前列表以便继续选择。
@@ -48,6 +50,8 @@ The native policy remains `deny` by default; `allow-all` permits unattended tool
 
 Observations retain at most 50 entries from the last 24 hours in memory, with no prompts, responses, image paths, credentials or native session IDs. Missing usage stays unknown and a reported zero stays zero. No credits or money are inferred from tokens. HTTP 405/HTML edge failures are channel failures, not proof of an exhausted plan. Aborted paused consumers release admission only after native cleanup and record cancellation once.
 
-`status`, `capabilities`, and `doctor --share` stay local and send no generation turn. Ordinary `doctor`, `models`, and `protocol` start the real app-server and may perform discovery network requests; `turn` and `image` consume quota. Local reports cannot prove the active host's loaded version. The owner-authenticated management route requires current scope/revision, a process control key, bounded JSON and exact matching of any supplied Origin; official authenticated Desktop forwarding may omit Origin.
+`status`, `capabilities`, and `doctor --share` stay local and send no generation turn. Ordinary `doctor`, `models`, and `protocol` start the real app-server and may perform discovery network requests; `turn` and `image` consume quota. Local reports cannot prove the active host's loaded version.
+
+The HTTP management route first calls the host's synchronous `connection.requestRejection(req)`: only `undefined` passes, `401` / `403` reject, and missing, throwing or invalid checks (including Promises) fail closed. This precedes owner admission, body reads, state reads and account/runtime actions. Existing owner authorization, current scope/revision, process control key, method, bounded JSON and exact matching of any supplied Origin remain required; official authenticated Desktop forwarding may omit Origin after host admission. Hosts without both admission APIs leave the toolkit unavailable while the CLI and provider remain usable independently.
 
 Use the separate [acceptance record](toolkit-acceptance.md) for what actually passed. Public publication/merge and paid generation are separate operations.

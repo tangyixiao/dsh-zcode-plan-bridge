@@ -21,7 +21,7 @@
 Desktop: install the release `.tgz` through Extensions → Plugin Management → Add Plugin. For a Web profile you explicitly control:
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.4
 ```
 
 Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accountMode: start-plan` explicitly for that channel; a billing error alone does not mean a top-up is needed.
@@ -30,7 +30,7 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.3` · see [package.json](package.json) |
+| Source version | `0.6.4` · see [package.json](package.json) |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3` |
 | Node.js | `>=22` |
@@ -43,6 +43,8 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 ## ZCode toolkit and accounts
 
 `0.6.3` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+
+`0.6.4` explicitly calls the host's `connection.requestRejection` at the toolkit entry before the existing owner, same-origin and control-key checks. Missing, throwing or contract-invalid host checks deny access; authenticated Desktop forwarding may still omit Origin. See the [changelog](CHANGELOG.md).
 
 Account controls reuse the existing [Z·SWITCH](https://github.com/pjpv/zcode-switch) library and commands. Independent mode changes only the DSH account by default; shared mode also changes the ZCode login. Save, rename, update, delete and manually query account quotas, or enable next-request switching after confirmed quota exhaustion. Failed agent tasks are never automatically replayed. See the [account guide](docs/zswitch-accounts.md).
 
