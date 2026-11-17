@@ -42,7 +42,9 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 ## ZCode toolkit and accounts
 
-`0.6.3` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+`0.6.4` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+
+Session title requests ask the model for a summary through a separate disposable native session, which closes when the request settles. They do not return a prompt prefix or reuse the main chat's native session. The original host title plugin still owns its input limit and timeout.
 
 `0.6.4` explicitly calls the host's `connection.requestRejection` at the toolkit entry before the existing owner, same-origin and control-key checks. Missing, throwing or contract-invalid host checks deny access; authenticated Desktop forwarding may still omit Origin. See the [changelog](CHANGELOG.md).
 

@@ -2,6 +2,8 @@
 
 ## 0.6.4
 
+- Generate real session-title summaries in disposable native sessions instead of returning a fabricated prompt-prefix result; preserve the main conversation session and close auxiliary sessions on settlement.
+
 - Explicitly apply the host's synchronous `connection.requestRejection(req)` contract before toolkit owner admission, request-body reads, state reads or account/runtime actions. Only `undefined` passes; `401` / `403` reject, and missing, throwing or invalid checks fail closed. Promise/thenable results are denied and their rejections consumed.
 - Preserve owner authorization, method and same-origin checks, bounded JSON, the process control key, scope/revision protection and authenticated Desktop forwarding without Origin.
 - Reject malformed or asynchronous owner admissions and throwing identity access before body reads or toolkit work; consume rejected async admissions.
