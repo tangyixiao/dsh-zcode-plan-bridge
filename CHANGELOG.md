@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.6.4
+## 0.6.5
 
-- Generate real session-title summaries in disposable native sessions instead of returning a fabricated prompt-prefix result; preserve the main conversation session and close auxiliary sessions on settlement.
+- Generate actual session summaries in disposable native sessions instead of returning a fabricated 24-character prompt-prefix result.
+- Preserve the main conversation session and close auxiliary native sessions on settlement.
+- Retain the full 0.6.4 toolkit host/owner admission protections.
+
+## 0.6.4
 
 - Explicitly apply the host's synchronous `connection.requestRejection(req)` contract before toolkit owner admission, request-body reads, state reads or account/runtime actions. Only `undefined` passes; `401` / `403` reject, and missing, throwing or invalid checks fail closed. Promise/thenable results are denied and their rejections consumed.
 - Preserve owner authorization, method and same-origin checks, bounded JSON, the process control key, scope/revision protection and authenticated Desktop forwarding without Origin.
