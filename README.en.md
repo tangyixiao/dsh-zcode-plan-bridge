@@ -44,6 +44,8 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 `0.6.3` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
 
+Session title requests ask the model for a summary through a separate disposable native session, which closes when the request settles. They do not return a prompt prefix or reuse the main chat's native session. The original host title plugin still owns its input limit and timeout.
+
 Account controls reuse the existing [Z·SWITCH](https://github.com/pjpv/zcode-switch) library and commands. Independent mode changes only the DSH account by default; shared mode also changes the ZCode login. Save, rename, update, delete and manually query account quotas, or enable next-request switching after confirmed quota exhaustion. Failed agent tasks are never automatically replayed. See the [account guide](docs/zswitch-accounts.md).
 
 Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.

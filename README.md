@@ -44,6 +44,8 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.3
 
 `0.6.3` 提供中英文工具箱：本地状态与 Start Plan 套餐刷新、模型显示与默认推理、会话与 Retry 管理、近期 token / 错误观测和可分享诊断。沿用现有 `zcode-cli` 接入，缺少宿主界面或认证服务时保留命令行与模型提供方。
 
+会话标题请求使用模型生成摘要，通过独立的临时原生会话执行并在结束后关闭；不会把提示词前缀当作生成结果，也不会复用主聊天的原生会话。宿主的标题生成输入上限与超时仍由原版标题插件控制。
+
 多账号功能复用 [Z·SWITCH](https://github.com/pjpv/zcode-switch) 的现有账号库和管理命令。默认独立模式只改变 DSH 使用的账号，也可选择与 ZCode 共用登录。支持保存、改名、更新、删除、手动额度查询，以及明确额度耗尽后的下一次请求自动换号；不会自动重跑失败的 agent 任务。见[多账号说明](docs/zswitch-accounts.md)。
 
 设置按凭证版本和套餐通道隔离；单次请求明确指定的推理档位优先。活跃与排队请求会阻止清理和设置修改。`status`、`capabilities`、`doctor --share` 只读本地状态，不启动生成；普通 `doctor` / `models` 会启动 app-server 查询目录，不能称为完全离线。
