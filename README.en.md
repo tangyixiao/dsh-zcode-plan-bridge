@@ -46,6 +46,8 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 Session title requests ask the model for a summary through a separate disposable native session, which closes when the request settles. They do not return a prompt prefix or reuse the main chat's native session. The original host title plugin still owns its input limit and timeout.
 
+`0.6.4` explicitly calls the host's `connection.requestRejection` at the toolkit entry before the existing owner, same-origin and control-key checks. Missing, throwing or contract-invalid host checks deny access; authenticated Desktop forwarding may still omit Origin. See the [changelog](CHANGELOG.md).
+
 Account controls reuse the existing [Z·SWITCH](https://github.com/pjpv/zcode-switch) library and commands. Independent mode changes only the DSH account by default; shared mode also changes the ZCode login. Save, rename, update, delete and manually query account quotas, or enable next-request switching after confirmed quota exhaustion. Failed agent tasks are never automatically replayed. See the [account guide](docs/zswitch-accounts.md).
 
 Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
