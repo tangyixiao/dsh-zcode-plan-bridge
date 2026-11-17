@@ -107,6 +107,29 @@ test('host trust verdict is authoritative for hostile Host, Origin and Fetch Met
   }
 })
 
+test('owner admission fails closed for malformed or asynchronous results and throwing identity access', async () => {
+  const invalidOwners = [() => undefined, () => null, () => false, () => true, () => 1, () => 'owner', () => Symbol('owner'),
+    () => ({}), () => ({ rejection: undefined }), () => ({ rejection: 200 }), () => ({ peer: {} }),
+    () => Object.assign([], owner), () => { throw new Error('owner-unavailable') },
+    () => Promise.resolve(owner), () => Promise.reject(new Error('async-owner')),
+    () => ({ then(resolve, reject) { reject(new Error('thenable-owner')) } }),
+    () => ({ get peer() { throw new Error('identity-unavailable') } }),
+    () => ({ get rejection() { throw new Error('rejection-unavailable') } })]
+  for (const make of invalidOwners) {
+    const route = registeredRoute({ requestRejection: () => undefined, admit: make })
+    for (const method of ['GET', 'POST']) {
+      const req = fakeRequest(method)
+      const res = fakeResponse()
+      await route.handler(req, res)
+      assert.ok([401, 403].includes(res.status))
+      assert.equal(req.bodyReads, 0)
+    }
+    assert.deepEqual(route.calls, [])
+    await new Promise(resolve => setImmediate(resolve))
+    route.dispose()
+  }
+})
+
 test('verified host pass preserves owner, method, control-key and Desktop forwarding requirements', async () => {
   const order = []
   const route = registeredRoute({ requestRejection() { order.push('fence'); return undefined }, admit() { order.push('owner'); return owner } })
