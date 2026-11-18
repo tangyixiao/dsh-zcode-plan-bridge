@@ -38,7 +38,42 @@ test('quota decision persists and only a new independent request consumes the pe
   assert.equal(state.history.length,1)
   assert.doesNotMatch(fs.readFileSync(h.file,'utf8'), /"first"|"next"|token|credentials/)
 })
-test('only structured quota 1113 arms a rotation; arbitrary messages and HTTP errors do not', async t => {
+for (const code of ['1005', 1005]) {
+  test(`Start Plan quota ${typeof code} 1005 persists exhaustion and rotates only the next new request`, async t => {
+    const h=harness(t); await enable(h)
+    const request=h.request('failed quota turn')
+    await h.manager.failed(await h.manager.prepare(request), { providerErrorCode:code, providerId:'account:zai-start-plan', providerMessage:'exceed quota limit' })
+    const state=await h.manager.state()
+    assert.deepEqual(state.exhausted,['one']); assert.equal(state.pending.from,'one')
+    assert.equal(h.calls.some(c=>c.action==='switch'),false)
+    await assert.rejects(h.manager.prepare(request), /account-request-replay-blocked/)
+    const restored=new ZSwitchAccounts({client:h.client,adapter:h.adapter,options:h.options,file:h.file,generation:h.generation})
+    await restored.prepare(h.request('continue after quota failure'))
+    assert.equal((await restored.state()).activeId,'two')
+    assert.equal((await restored.state()).history.length,1)
+    assert.equal(h.calls.filter(c=>c.action==='switch').length,1)
+    assert.doesNotMatch(fs.readFileSync(h.file,'utf8'), /exceed quota limit|failed quota turn/)
+  })
+}
+
+test('1005 needs the observed Start Plan quota message and attribution; other failures never rotate', async t => {
+  const h=harness(t); await enable(h)
+  const quota={providerErrorCode:'1005',providerId:'account:zai-start-plan',providerMessage:'exceed quota limit'}
+  for (const evidence of [
+    {...quota,providerErrorCode:undefined}, {...quota,providerId:undefined}, {...quota,providerId:'custom-api'},
+    {...quota,providerId:'account:bigmodel-individual-coding-plan'}, {...quota,providerId:'account:zai-individual-coding-plan'},
+    {...quota,providerMessage:undefined}, {...quota,providerMessage:'user concurrency limit exceeded'},
+    {...quota,providerMessage:'upstream timeout'}, {...quota,providerErrorCode:'429'},
+    {...quota,cancelled:true}, {...quota,contextExceeded:true},
+  ]) {
+    await h.manager.failed(await h.manager.prepare(h.request('input')),evidence)
+    const state=await h.manager.state()
+    assert.equal(state.pending,null); assert.deepEqual(state.exhausted,[])
+  }
+  assert.equal(h.calls.some(c=>c.action==='switch'),false)
+})
+
+test('structured quota attribution is required; arbitrary messages and HTTP errors do not rotate', async t => {
   const h=harness(t); await enable(h)
   for(const evidence of [{message:'[1113] quota insufficient balance'}, {code:1113}, {providerErrorCode:429}, {providerErrorCode:'1302'}, {providerErrorCode:'401'}, {providerErrorCode:'1113',cancelled:true}, {providerErrorCode:'1113'}, {providerErrorCode:'1113',providerId:'custom-api'}, {providerErrorCode:'1113',providerId:'account:zai-start-plan',contextExceeded:true}]) {
     await h.manager.failed(await h.manager.prepare(h.request('input')),evidence)
@@ -86,7 +121,11 @@ test('an incompatible automatic target stops before generation and remains obser
   assert.equal(h.calls.filter(c=>c.action==='switch').length,1)
 })
 
-test('independent selection reuses snapshots and never invokes the global switch', async t => {
+for (const evidence of [
+  {providerErrorCode:'1113',providerId:'account:zai-start-plan'},
+  {providerErrorCode:'1005',providerId:'account:zai-start-plan',providerMessage:'exceed quota limit'},
+]) {
+test(`independent quota ${evidence.providerErrorCode} rotation reuses snapshots without a global switch`, async t => {
   const h=harness(t)
   let selected
   h.client.snapshot=async id=>({id,revision:'library-generation'})
@@ -102,11 +141,12 @@ test('independent selection reuses snapshots and never invokes the global switch
   h.external('three')
   const snapshot=await manager.prepare(h.request('one'))
   assert.equal((await manager.state()).activeId,'two')
-  await manager.failed(snapshot, {providerErrorCode:'1113',providerId:'account:zai-start-plan'})
+  await manager.failed(snapshot, evidence)
   await manager.prepare(h.request('two'))
   assert.equal((await manager.state()).activeId,'three')
   assert.equal(h.calls.some(c=>c.action==='switch'),false)
 })
+}
 
 test('an unknown current account cannot corrupt the persisted rotation document', async t => {
   const h=harness(t);const source=await h.client.state();h.client.state=async()=>({...source,activeId:null})

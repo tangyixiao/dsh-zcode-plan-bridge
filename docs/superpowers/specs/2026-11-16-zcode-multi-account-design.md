@@ -51,7 +51,7 @@ Validate the selected account's real catalog and exact requested route before ge
 
 The optional ordered rotation policy defaults off. It requires an identifiable current saved account and explicit participant order. Independent remains the default switch scope.
 
-Only structured providerErrorCode 1113 from a supported native Z.AI/BigModel account-plan route can mark exhaustion. Start Plan requires the Start Plan route. Preserve provider/model attribution internally. Arbitrary message text, custom/API routes, HTTP 429 alone, concurrency limits, login expiry, entitlement denial, timeouts, cancellation, transport errors and ESA HTML/405 never trigger rotation.
+Structured providerErrorCode 1113 from a supported native Z.AI/BigModel account-plan route can mark exhaustion. The 2026-11-18 compatibility correction also accepts structured code 1005 only from `account:zai-start-plan` with the native message `exceed quota limit`, matching an observed Start Plan quota failure. Start Plan requires the Start Plan route. Preserve provider/model attribution internally. Arbitrary message text, other 1005 messages/routes, custom/API routes, HTTP 429 alone, concurrency limits, login expiry, entitlement denial, timeouts, cancellation, transport errors and ESA HTML/405 never trigger rotation.
 
 Finish the failed native-agent turn with its real result. After existing admission drains, the next independent request may select the next non-exhausted account. Status, quota, catalog and local title reads do not consume a pending rotation.
 
