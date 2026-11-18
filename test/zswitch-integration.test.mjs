@@ -22,16 +22,19 @@ test('stream admission captures account, reports structured quota and never rese
   assert.equal(sends,1);assert.equal(adapter.toolkitRequests,0)
   assert.equal(adapter.providerRetryPolicy().maxRetries,0)
 })
-test('native turn attribution survives until policy while displayed errors remain compatible',async()=>{
+for (const [providerErrorCode, message] of [['1113','insufficient balance'],['1005','exceed quota limit']]) {
+test(`native quota ${providerErrorCode} attribution and message survive until policy`,async()=>{
   const adapter=new ZcodeAppServerAdapter({options:()=>resolveOptions({})})
   adapter.ensureSession=async()=>({sessionId:'native',firstTurn:false})
   let listener,observed
   adapter.client.onNotification=callback=>{listener=callback;return()=>{}}
-  adapter.client.request=async method=>{if(method==='session/send')listener({method:'session/event',params:{sessionId:'native',type:'turn.failed',payload:{error:{message:'insufficient balance',attribution:{providerErrorCode:'1113',providerId:'account:zai-start-plan'}}}}});return{}}
+  adapter.client.request=async method=>{if(method==='session/send')listener({method:'session/event',params:{sessionId:'native',type:'turn.failed',payload:{error:{message,attribution:{providerErrorCode,providerId:'account:zai-start-plan'}}}}});return{}}
   for await(const _chunk of adapter.streamTurn({model:'GLM-5.3-Flash',messages:[]},undefined,undefined,value=>{observed=value})){}
-  assert.equal(observed.providerErrorCode,'1113')
+  assert.equal(observed.providerErrorCode,providerErrorCode)
   assert.equal(observed.providerId,'account:zai-start-plan')
+  assert.equal(observed.providerMessage,message)
 })
+}
 
 test('shared login changes stop the owned old agent before any auth fallback',async()=>{
   const adapter=new ZcodeAppServerAdapter({options:()=>resolveOptions({zcodeDataBaseDir:'nonexistent-zswitch-source-fixture'})})

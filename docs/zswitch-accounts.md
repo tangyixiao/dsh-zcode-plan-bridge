@@ -16,7 +16,7 @@ Version `0.6.3` extends the existing toolkit rather than introducing another des
 
 ## 自动换号的准确含义
 
-- 只认原生错误归因中、实际账号套餐路由的 `providerErrorCode: 1113`。普通 429、并发限制、网络错误、登录失效、权益不足和 ESA HTML/405 不会触发轮换。
+- 识别原生错误归因中、实际账号套餐路由的 `providerErrorCode: 1113`；另识别 Start Plan 路由 `account:zai-start-plan` 返回的结构化 `1005`，且原生错误消息必须为 `exceed quota limit`。仅有消息文本、其他路由或其他含义的 `1005` 均不足以触发轮换。普通 429、并发限制、网络错误、登录失效、权益不足和 ESA HTML/405 不会触发轮换。
 - 当前失败回合按真实结果结束。所有已接收请求排空之后，下一次独立请求才选择下一个可用账号。状态刷新、查额度、模型目录查询和本地会话标题不会消耗待切换动作。
 - 不跨账号自动重发 `session/send`。开启轮换时关闭 DSH 外层自动重试，并以不可逆摘要阻止原样失败请求被另一层重试带到新账号。发一条新消息，或先明确选择账号/重置状态，再重试原任务。
 - 下一账号必须支持所选模型与套餐通道。不能满足时明确停止，不悄悄替换模型或走另一计费通道。请求、目录查询或账号操作未结束时，其他账号变更会提示忙碌。
@@ -44,3 +44,5 @@ Offline fixtures cover account modes, admission, attribution, no-replay behavior
 Use the existing Z·SWITCH account library. Add logins there, refresh the DSH toolkit, choose **Independent** (the default) or **Shared**, then select an account. Independent mode gives DSH its own native working profile and preserves Desktop login; shared mode delegates the global login switch without force/restart. Account-library CRUD is shared in both modes.
 
 Enable an ordered set of accounts for next-request rotation after a confirmed account-route quota failure. The failed task is not replayed. Status/catalog reads do not trigger rotation, and an unchanged failed input cannot silently move to another account. Exhausted accounts require an explicit reset; model/channel incompatibility stops generation rather than changing the requested route. New OAuth login and activity claiming stay in Z·SWITCH.
+
+Quota evidence requires native account-route attribution: code `1113`, or code `1005` specifically from `account:zai-start-plan` with the native message `exceed quota limit`. Message text alone, other routes and other meanings of `1005` cannot arm rotation.
