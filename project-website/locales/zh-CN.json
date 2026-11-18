@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "description": "沿用本机 ZCode 登录，从 DSH 选择账号实际可用的模型，发送文字或图片并读取流式回复。"
+  },
+  "pages": {
+    "home": {
+      "title": "在 DSH 里接着用 ZCode CLI · {project}"
+    },
+    "features": {
+      "title": "项目特点 · {project}",
+      "description": "沿用本机 ZCode 登录，从 DSH 选择账号实际可用的模型，发送文字或图片并读取流式回复。"
+    },
+    "download": {
+      "title": "开始使用 · {project}",
+      "description": "在本机 CLI 中完成登录，确认 DSH 使用的是同一套环境。"
+    },
+    "community": {
+      "title": "参与项目 · {project}",
+      "description": "从这里找到使用说明、已有讨论和项目变更。"
+    }
+  },
+  "nav": {
+    "home": "首页",
+    "features": "项目特点",
+    "download": "开始使用",
+    "community": "参与项目"
+  },
+  "ui": {
+    "skip_link": "跳转到主要内容",
+    "navigation": "主导航",
+    "open_navigation": "打开导航",
+    "close_navigation": "关闭导航",
+    "language": "选择语言",
+    "theme": "选择主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "platforms": "支持的平台",
+    "github": "GitHub",
+    "view_image": "查看完整演示图",
+    "feature_more": "查看详情",
+    "download": "查看安装说明",
+    "release_notes": "仓库源代码",
+    "documentation": "使用文档",
+    "source": "仓库源代码",
+    "illustration": "使用路径",
+    "license": "GNU AGPL v3"
+  },
+  "hero": {
+    "title": [
+      "在 DSH 里接着用 ZCode CLI"
+    ],
+    "description": [
+      "沿用本机 ZCode 登录，从 DSH 选择账号实际可用的模型，发送文字或图片并读取流式回复。"
+    ],
+    "primary_action": "查看安装说明",
+    "secondary_action": "查看详情"
+  },
+  "preview": {
+    "caption": "使用路径",
+    "tabs": [
+      {
+        "label": "开始使用",
+        "icon": "book"
+      }
+    ],
+    "items": [
+      {
+        "title": "登录 ZCode CLI",
+        "description": "在本机 CLI 中完成登录，确认 DSH 使用的是同一套环境。",
+        "icon": "book"
+      },
+      {
+        "title": "安装并选模型",
+        "description": "在 DSH Desktop 的插件管理中添加发布的 .tgz，打开 ZCode CLI 模型组并试发一条消息。",
+        "icon": "link"
+      }
+    ]
+  },
+  "features": {
+    "title": "项目特点",
+    "groups": [
+      {
+        "title": "账号可用模型",
+        "description": "模型目录随当前 CLI 和账号授权读取。需要 Start Plan 时可显式选用对应通道。",
+        "detail": "",
+        "icon": "layers"
+      },
+      {
+        "title": "持续对话",
+        "description": "插件复用本地 app-server 会话。工具箱可以查看会话、近期错误与可分享的诊断。",
+        "detail": "",
+        "icon": "book"
+      }
+    ]
+  },
+  "getting_started": {
+    "title": "开始使用 · {project}",
+    "steps": [
+      {
+        "title": "登录 ZCode CLI",
+        "description": "在本机 CLI 中完成登录，确认 DSH 使用的是同一套环境。",
+        "icon": "book"
+      },
+      {
+        "title": "安装并选模型",
+        "description": "在 DSH Desktop 的插件管理中添加发布的 .tgz，打开 ZCode CLI 模型组并试发一条消息。",
+        "icon": "link"
+      }
+    ]
+  },
+  "community": {
+    "title": "参与 · {project}",
+    "description": "从这里找到使用说明、已有讨论和项目变更。",
+    "links": [
+      {
+        "label": "帮助与反馈",
+        "description": "查看已报告的问题，或描述复现步骤。",
+        "icon": "book"
+      },
+      {
+        "label": "参与讨论",
+        "description": "查看已有话题，分享使用方法或改进建议。",
+        "icon": "link"
+      },
+      {
+        "label": "查看项目变更",
+        "description": "查看已有拉取请求或准备贡献。",
+        "icon": "code"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": "{copyright}"
+  }
+}
