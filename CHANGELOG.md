@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.6-quota.1
+## 0.6.6
 
 - Recognize the observed Start Plan quota error `1005` / `exceed quota limit` when native attribution identifies `account:zai-start-plan`, so the next new request can rotate to another saved account after quota exhaustion.
 - Preserve structured `1113` support, ordered account selection, restart persistence and failed-request replay protection. Other `1005` messages/routes, cancellation, context overflow and ordinary HTTP limits do not trigger rotation.
