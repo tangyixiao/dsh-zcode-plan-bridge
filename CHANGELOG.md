@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.7
+
+- Qualify the provider and toolkit on DSH 0.2.2-rc.5 and include the exact host release in the DSH engine and model peer ranges.
+
 ## 0.6.6
 
 - Recognize the observed Start Plan quota error `1005` / `exceed quota limit` when native attribution identifies `account:zai-start-plan`, so the next new request can rotate to another saved account after quota exhaustion.
