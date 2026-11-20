@@ -48,7 +48,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.7
 
 `0.6.5` 在工具箱入口显式调用宿主 `connection.requestRejection`，通过后再检查主人身份、同源和控制密钥。缺少宿主准入检查、检查抛错或返回不符合合同的结果时拒绝访问；认证后的 Desktop 转发仍可省略 Origin。见[变更记录](CHANGELOG.md)。
 
-多账号功能复用 [Z·SWITCH](https://github.com/pjpv/zcode-switch) 的现有账号库和管理命令。默认独立模式只改变 DSH 使用的账号，也可选择与 ZCode 共用登录。支持保存、改名、更新、删除、手动额度查询，以及明确额度耗尽后的下一次请求自动换号；不会自动重跑失败的 agent 任务。见[多账号说明](docs/zswitch-accounts.md)。
+多账号功能复用 [Z·SWITCH](https://github.com/pjpv/zcode-switch) 的账号库和管理命令。默认独立模式只改变 DSH 使用的账号，也可选择与 ZCode 共用登录。确认额度耗尽后，下一条新请求可以自动换号。独立模式可额外开启自动续跑，等后台工具结束后带着进度摘要接着做。操作方法见[多账号说明](docs/zswitch-accounts.md)。
 
 设置按凭证版本和套餐通道隔离；单次请求明确指定的推理档位优先。活跃与排队请求会阻止清理和设置修改。`status`、`capabilities`、`doctor --share` 只读本地状态，不启动生成；普通 `doctor` / `models` 会启动 app-server 查询目录，不能称为完全离线。
 

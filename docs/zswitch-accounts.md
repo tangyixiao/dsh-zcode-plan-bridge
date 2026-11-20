@@ -17,9 +17,15 @@ Version `0.6.3` extends the existing toolkit rather than introducing another des
 ## 自动换号的准确含义
 
 - 识别原生错误归因中、实际账号套餐路由的 `providerErrorCode: 1113`；另识别 Start Plan 路由 `account:zai-start-plan` 返回的结构化 `1005`，且原生错误消息必须为 `exceed quota limit`。仅有消息文本、其他路由或其他含义的 `1005` 均不足以触发轮换。普通 429、并发限制、网络错误、登录失效、权益不足和 ESA HTML/405 不会触发轮换。
-- 当前失败回合按真实结果结束。所有已接收请求排空之后，下一次独立请求才选择下一个可用账号。状态刷新、查额度、模型目录查询和本地会话标题不会消耗待切换动作。
-- 不跨账号自动重发 `session/send`。开启轮换时关闭 DSH 外层自动重试，并以不可逆摘要阻止原样失败请求被另一层重试带到新账号。发一条新消息，或先明确选择账号/重置状态，再重试原任务。
+- 默认在当前回合报出失败，下一条新请求才选择下一个可用账号。状态刷新、查额度、模型目录查询和本地会话标题不会消耗待切换动作。
+- 开启轮换时关闭 DSH 外层自动重试，并以不可逆摘要拦截原样重试。手动续跑时，可以在原对话发一条新消息，要求先检查进度再做剩余部分。
 - 下一账号必须支持所选模型与套餐通道。不能满足时明确停止，不悄悄替换模型或走另一计费通道。请求、目录查询或账号操作未结束时，其他账号变更会提示忙碌。
+
+## 自动续跑
+
+在插件配置中打开 `resumeOnQuotaExhaustion`，并启用独立模式的账号轮换。确认额度耗尽后，插件查询原会话及同一内核的其他会话，等正在执行的工具、后台任务和后续回合结束。随后用下一个可用账号发起带进度摘要的新请求，保留原对话、工作区和模型，先让 agent 核对实际进度再继续。
+
+每次最多等约三分钟。等待时可以取消。并发请求、无法核实原生状态、账号配置变更或轮换池用尽时，当前回合会结束并显示失败。续跑依赖当前宿主进程，重启后仍可用新消息触发普通换号。工具和待办的摘要能帮助 agent 判断进度，涉及外部效果的操作仍需核实。
 
 ## 独立运行的边界
 
@@ -43,6 +49,8 @@ Offline fixtures cover account modes, admission, attribution, no-replay behavior
 
 Use the existing Z·SWITCH account library. Add logins there, refresh the DSH toolkit, choose **Independent** (the default) or **Shared**, then select an account. Independent mode gives DSH its own native working profile and preserves Desktop login; shared mode delegates the global login switch without force/restart. Account-library CRUD is shared in both modes.
 
-Enable an ordered set of accounts for next-request rotation after a confirmed account-route quota failure. The failed task is not replayed. Status/catalog reads do not trigger rotation, and an unchanged failed input cannot silently move to another account. Exhausted accounts require an explicit reset; model/channel incompatibility stops generation rather than changing the requested route. New OAuth login and activity claiming stay in Z·SWITCH.
+Enable an ordered set of accounts for next-request rotation after a confirmed account-route quota failure. Status/catalog reads leave the pending switch alone, and the bridge blocks unchanged failed-input retries. Exhausted accounts require an explicit reset. Rotation checks that the new account can serve the requested model and plan channel. New OAuth login and activity claiming stay in Z·SWITCH.
+
+Enable `resumeOnQuotaExhaustion` to continue a conversation turn automatically in independent mode. The bridge waits up to about three minutes for native tools, background jobs and follow-up turns to drain. It then starts a new request on the next eligible account with a checkpoint of recent tools and todos, asking the agent to verify progress before continuing. Cancellation, competing activity, unverified native state, policy changes and an exhausted pool can end the turn. Automatic continuation requires the current host process.
 
 Quota evidence requires native account-route attribution: code `1113`, or code `1005` specifically from `account:zai-start-plan` with the native message `exceed quota limit`. Message text alone, other routes and other meanings of `1005` cannot arm rotation.

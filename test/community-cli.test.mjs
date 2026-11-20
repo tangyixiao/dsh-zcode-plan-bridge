@@ -87,6 +87,16 @@ for (const {cli, mode} of runs) test(`real CLI ${mode} uses community retry tran
     await request('session/send', { sessionId, content: 'Reply only RETRY_FIXTURE_OK; do not use tools.' })
     while (!terminal && Date.now() < deadline && child.exitCode === null) await new Promise(r => setTimeout(r, 100))
     assert.equal(terminal?.type, ['success', 'unlimited'].includes(mode) ? 'turn.completed' : 'turn.failed', JSON.stringify(terminal) + '\n' + stderr)
+    if (mode === 'terminal') {
+      const snapshot = await request('session/read', { sessionId, messageLimit: 16, contentProfile: 'index' })
+      assert.equal(snapshot.projection.sessionId, sessionId)
+      assert.equal(snapshot.projection.status, 'error')
+      assert.deepEqual(snapshot.projection.activeToolCalls, [])
+      assert.deepEqual(snapshot.projection.backgroundJobs, [])
+      assert.deepEqual(snapshot.projection.pendingPermissions, [])
+      assert.ok(Number.isSafeInteger(snapshot.runtime.eventSeq))
+      assert.ok(Array.isArray(snapshot.messages))
+    }
     if (['success', 'unlimited'].includes(mode)) assert.match(JSON.stringify(terminal), /RETRY_FIXTURE_OK/)
     assert.equal(calls, mode === 'unlimited' ? 26 : mode === 'success' ? 3 : mode === 'terminal' ? 1 : 7, 'native or outer retry must not multiply calls')
     assert.equal(loaded, true, 'community loader must acknowledge startup')

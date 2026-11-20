@@ -23,6 +23,30 @@ function harness(t) {
 }
 async function enable(h, order=['one','two','three']) { const s=await h.manager.state(); await h.manager.action({ operation:'policy', revision:s.revision, enabled:true, order }) }
 
+test('automatic continuation is bound to the exact pending independent rotation', async t => {
+  const h = harness(t)
+  h.client.snapshot = async id => ({ id })
+  const manager = new ZSwitchAccounts({
+    client: h.client, adapter: h.adapter, file: h.file, options: () => ({}),
+    profiles: { activate: snapshot => ({ managedAccount: { id: snapshot.id } }) },
+  })
+  await manager.action({ operation: 'select', id: 'one', revision: (await manager.state()).revision })
+  await enable({ manager })
+  const request = h.request('original task')
+  const quota = { providerErrorCode: 1005, providerId: 'account:zai-start-plan', providerMessage: 'exceed quota limit' }
+  const revision = await manager.failed(await manager.prepare(request), quota)
+  assert.equal(typeof revision, 'string')
+  await assert.rejects(manager.prepare(request), /account-request-replay-blocked/)
+  assert.equal((await manager.prepare(request, revision)).id, 'two')
+  await assert.rejects(manager.prepare(request, revision), /stale-state/)
+
+  const secondRevision = await manager.failed(await manager.prepare(h.request('another task')), quota)
+  h.changedLibrary()
+  await assert.rejects(manager.prepare(request, secondRevision), /stale-state/)
+  assert.equal((await manager.state()).activeId, 'two')
+  assert.equal((await manager.state()).pending.from, 'two')
+})
+
 test('quota decision persists and only a new independent request consumes the pending switch', async t => {
   const h=harness(t); await enable(h)
   const snapshot=await h.manager.prepare(h.request('first'))
