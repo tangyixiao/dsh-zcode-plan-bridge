@@ -21,7 +21,7 @@
 Desktop: install the release `.tgz` through Extensions → Plugin Management → Add Plugin. For a Web profile you explicitly control:
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.7
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.8
 ```
 
 Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accountMode: start-plan` explicitly for that channel; a billing error alone does not mean a top-up is needed.
@@ -30,7 +30,7 @@ Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accou
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.7` · see [package.json](package.json) |
+| Source version | `0.6.8` · see [package.json](package.json) |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3 \|\| 0.2.2-rc.5` |
 | Node.js | `>=22` |
@@ -48,7 +48,7 @@ Session title requests ask the model for a summary through a separate disposable
 
 `0.6.5` explicitly calls the host's `connection.requestRejection` at the toolkit entry before the existing owner, same-origin and control-key checks. Missing, throwing or contract-invalid host checks deny access; authenticated Desktop forwarding may still omit Origin. See the [changelog](CHANGELOG.md).
 
-Account controls reuse the existing [Z·SWITCH](https://github.com/pjpv/zcode-switch) library and commands. Independent mode changes only the DSH account, and shared mode also changes the ZCode login. Enable next-request switching after confirmed quota exhaustion. In independent mode, you can also opt into continuing the current task after native tools drain, with a checkpoint of its progress. See the [account guide](docs/zswitch-accounts.md).
+Account controls reuse the Z·SWITCH library. When independent rotation is enabled, a confirmed quota failure waits for native tools to drain and continues the current task on the next eligible account by default. Shared rotation switches on the next new request. See the [account guide](docs/zswitch-accounts.md).
 
 Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
 

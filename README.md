@@ -21,7 +21,7 @@
 Desktop：从发行页下载 `.tgz`，在“扩展 → 插件管理 → 添加插件”中安装。命令行示例用于你明确控制的 Web profile：
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.7
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.8
 ```
 
 先在 ZCode CLI 完成登录；在 DSH 中选择 `ZCode CLI` 模型组。需要 Start Plan 时显式设置 `accountMode: start-plan`，不要把余额错误直接当成需要充值。
@@ -30,7 +30,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.7
 
 | 项目 | 当前依据 |
 | --- | --- |
-| 源码版本 | `0.6.7` · 以 [package.json](package.json) 为准 |
+| 源码版本 | `0.6.8` · 以 [package.json](package.json) 为准 |
 | 分发方式 | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3 \|\| 0.2.2-rc.5` |
 | Node.js | `>=22` |
@@ -48,7 +48,7 @@ dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.7
 
 `0.6.5` 在工具箱入口显式调用宿主 `connection.requestRejection`，通过后再检查主人身份、同源和控制密钥。缺少宿主准入检查、检查抛错或返回不符合合同的结果时拒绝访问；认证后的 Desktop 转发仍可省略 Origin。见[变更记录](CHANGELOG.md)。
 
-多账号功能复用 [Z·SWITCH](https://github.com/pjpv/zcode-switch) 的账号库和管理命令。默认独立模式只改变 DSH 使用的账号，也可选择与 ZCode 共用登录。确认额度耗尽后，下一条新请求可以自动换号。独立模式可额外开启自动续跑，等后台工具结束后带着进度摘要接着做。操作方法见[多账号说明](docs/zswitch-accounts.md)。
+多账号功能复用 Z·SWITCH 的账号库。启用独立账号轮换后，额度耗尽时默认等后台工具收尾，再换号继续当前任务。共同模式使用下一条新请求触发换号。操作方法见[多账号说明](docs/zswitch-accounts.md)。
 
 设置按凭证版本和套餐通道隔离；单次请求明确指定的推理档位优先。活跃与排队请求会阻止清理和设置修改。`status`、`capabilities`、`doctor --share` 只读本地状态，不启动生成；普通 `doctor` / `models` 会启动 app-server 查询目录，不能称为完全离线。
 
