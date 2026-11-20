@@ -7,6 +7,8 @@ import { waitForQuotaCheckpoint } from '../lib/quota-continuation.js'
 
 test('account selection defaults to DSH independence and account actions remain closed',()=>{
   assert.equal(resolveOptions({}).zSwitchAccountMode,'independent')
+  assert.equal(resolveOptions({}).resumeOnQuotaExhaustion,true)
+  assert.equal(resolveOptions({resumeOnQuotaExhaustion:false}).resumeOnQuotaExhaustion,false)
   const value={action:'accounts',scope:'a'.repeat(64),revision:'initial',account:{operation:'select',id:'one',revision:'b'.repeat(64)}}
   assert.deepEqual(parseToolkitAction(value),value)
   assert.equal(parseToolkitAction({...value,account:{...value.account,credentials:'SECRET'}}),undefined)
@@ -62,8 +64,8 @@ test('native drain checkpoint observes background work, follow-up turn, and stab
   assert.equal(await waitForQuotaCheckpoint({ ...input, read: async () => ({}) }), undefined)
 })
 
-test('the DSH stream switches only after native drain and sends a checkpointed continuation', async () => {
-  const adapter = new ZcodeAppServerAdapter({ options: () => resolveOptions({ resumeOnQuotaExhaustion: true }) })
+test('the DSH stream defaults to checkpointed continuation after native drain', async () => {
+  const adapter = new ZcodeAppServerAdapter({ options: () => resolveOptions({}) })
   const request = { model: 'GLM-5.3-Flash', sessionId: 'DSH',
     messages: [{ role: 'user', content: [{ type: 'text', text: 'Finish the migration' }] }] }
   const steps = []
@@ -71,6 +73,7 @@ test('the DSH stream switches only after native drain and sends a checkpointed c
   let reads = 0
   adapter.accountController = {
     managing: false,
+    continuationEnabled: () => true,
     prepare: async (options, revision) => {
       assert.equal(options, request)
       if (revision !== undefined) {

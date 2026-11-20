@@ -30,8 +30,10 @@ test('automatic continuation is bound to the exact pending independent rotation'
     client: h.client, adapter: h.adapter, file: h.file, options: () => ({}),
     profiles: { activate: snapshot => ({ managedAccount: { id: snapshot.id } }) },
   })
+  assert.equal(manager.continuationEnabled(), false)
   await manager.action({ operation: 'select', id: 'one', revision: (await manager.state()).revision })
   await enable({ manager })
+  assert.equal(manager.continuationEnabled(), true)
   const request = h.request('original task')
   const quota = { providerErrorCode: 1005, providerId: 'account:zai-start-plan', providerMessage: 'exceed quota limit' }
   const revision = await manager.failed(await manager.prepare(request), quota)
@@ -49,6 +51,7 @@ test('automatic continuation is bound to the exact pending independent rotation'
 
 test('quota decision persists and only a new independent request consumes the pending switch', async t => {
   const h=harness(t); await enable(h)
+  assert.equal(h.manager.continuationEnabled(),false)
   const snapshot=await h.manager.prepare(h.request('first'))
   await h.manager.failed(snapshot, { providerErrorCode:'1113', providerId:'account:zai-start-plan' })
   assert.equal(h.calls.filter(c=>c.action==='switch').length,0)
