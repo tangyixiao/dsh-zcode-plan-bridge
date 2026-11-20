@@ -5,7 +5,7 @@ import { setImmediate } from 'node:timers/promises'
 import { ZcodeAppServerAdapter } from '../lib/app-server.js'
 import { resolveOptions } from '../lib/index.js'
 
-function harness(t, stuck = false) {
+function harness(t, fault) {
   t.mock.timers.enable({ apis: ['setTimeout'] })
   const adapter = new ZcodeAppServerAdapter({ options: () => resolveOptions({}) })
   let sessions = 0
@@ -24,10 +24,10 @@ function harness(t, stuck = false) {
   }) + '\n')
   adapter.client.write = (message) => {
     frames.push(message)
-    if (stuck && message.method === 'session/send' && message.params.sessionId === 's1') {
-      adapter.client.onData(JSON.stringify({ id: message.id, error: { message: 'A prompt is already running' } }) + '\n')
+    if (fault && message.method === 'session/send' && message.params.sessionId === 's1') {
+      adapter.client.onData(JSON.stringify({ id: message.id, error: { message: fault } }) + '\n')
     } else adapter.client.onData(JSON.stringify({ id: message.id, result: {} }) + '\n')
-    if (stuck && message.method === 'session/stop') {
+    if (fault === 'A prompt is already running' && message.method === 'session/stop') {
       event('s1', 'model.streaming', { kind: 'text_delta', delta: 'stale old response' })
       event('s1', 'turn.completed', { response: 'stale old response', resultType: 'success' })
     }
@@ -69,7 +69,7 @@ test('a canceled turn cannot finish its replacement with a late terminal event',
 })
 
 test('stuck-turn recovery discards old queued output before replaying into a new session', async (t) => {
-  const h = harness(t, true)
+  const h = harness(t, 'A prompt is already running')
   const turn = h.start(undefined, 'new question')
   await h.tick()
   await h.tick()
@@ -79,6 +79,19 @@ test('stuck-turn recovery discards old queued output before replaying into a new
   const chunks = [(await turn.pending).value]
   for await (const chunk of turn.stream) chunks.push(chunk)
   assert.equal(chunks.find((chunk) => chunk.type === 'block-end').block.text, 'fresh response')
+  assert.deepEqual([...h.adapter.nativeSessionsWithSends], ['s1', 's2'])
+})
+
+test('confirmed missing sessions are removed from the quota drain candidates', async (t) => {
+  const h = harness(t, 'Session is not available: s1')
+  const turn = h.start(undefined, 'continue the task')
+  await h.tick()
+  await h.tick()
+  assert.deepEqual([...h.adapter.nativeSessionsWithSends], ['s2'])
+  h.event('s2', 'turn.completed', { response: 'replacement', resultType: 'success' })
+  const chunks = [(await turn.pending).value]
+  for await (const chunk of turn.stream) chunks.push(chunk)
+  assert.equal(chunks.find(chunk => chunk.type === 'block-end').block.text, 'replacement')
 })
 
 test('title requests use the model in a disposable session without changing the main conversation', async (t) => {

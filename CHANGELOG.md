@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.8
+
+- Continue the current DSH task by default after confirmed quota exhaustion when independent account rotation is enabled. The bridge waits for native background work to drain and starts a new request with a checkpoint on the next eligible account.
+- Keep explicit `resumeOnQuotaExhaustion: false`, shared-mode next-request rotation, cancellation and the unchanged-input replay guard.
+
 ## 0.6.7
 
 - Qualify the provider and toolkit on DSH 0.2.2-rc.5 and include the exact host release in the DSH engine and model peer ranges.
