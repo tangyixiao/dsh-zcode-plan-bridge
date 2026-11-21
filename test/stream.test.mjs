@@ -101,7 +101,7 @@ test('registers a confirmed native subagent before the parent turn finishes', as
 
   const { stream, first } = await start(t, adapter)
   assert.deepEqual(children.map(([id, { createdAt, ...child }]) => [id, child]), [[
-    'dsh1', { id: 'sess_subagent_agent_child', name: 'agent_child', label: 'Inspect fixture' },
+    'dsh1', { id: 'sess_subagent_agent_child', label: 'Inspect fixture' },
   ]])
   finish('answer')
   const chunks = await collect(stream, first)
