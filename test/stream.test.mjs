@@ -12,7 +12,7 @@ function harness(t, onSend, deps = {}) {
   const event = (type, payload, sessionId = 's1') => adapter.client.onData(JSON.stringify({
     method: 'session/event', params: { sessionId, type, payload },
   }) + '\n')
-  const delta = (kind, text) => event('model.streaming', { kind: `${kind}_delta`, delta: text })
+  const delta = (kind, text, assistantMessageId) => event('model.streaming', { kind: `${kind}_delta`, delta: text, assistantMessageId })
   const finish = (response = '') => event('turn.completed', { response, resultType: 'success' })
   adapter.client.write = (message) => {
     adapter.client.onData(JSON.stringify({ id: message.id, result: {} }) + '\n')
@@ -83,6 +83,31 @@ test('ignores native todos from auxiliary requests', async (t) => {
   assert.deepEqual(plans, [])
 })
 
+test('registers a confirmed native subagent before the parent turn finishes', async (t) => {
+  const children = []
+  const { adapter, finish } = harness(t, ({ event, delta }) => {
+    const child = {
+      agentId: 'agent_child', agentType: 'Explore', childSessionId: 'sess_subagent_agent_child',
+      parentToolCallId: 'call-agent', status: 'running', description: 'Inspect fixture', prompt: 'Private task prompt',
+    }
+    event('session.updated', child)
+    event('tool.updated', { kind: 'started', toolName: 'Agent', toolCallId: 'call-agent' })
+    event('session.updated', child, 'other-session')
+    event('session.updated', { ...child, status: 'completed' })
+    event('session.updated', child)
+    event('session.updated', child)
+    delta('text', 'answer')
+  }, { publishSubagent: (id, child) => children.push([id, child]) })
+
+  const { stream, first } = await start(t, adapter)
+  assert.deepEqual(children.map(([id, { createdAt, ...child }]) => [id, child]), [[
+    'dsh1', { id: 'sess_subagent_agent_child', name: 'agent_child', label: 'Inspect fixture' },
+  ]])
+  finish('answer')
+  const chunks = await collect(stream, first)
+  assert.equal(chunks.find((chunk) => chunk.type === 'block-end').block.text, 'answer')
+})
+
 test('completion drain filters reasoning tags split across deltas', async (t) => {
   const { adapter } = harness(t, ({ delta, finish }) => {
     delta('reasoning', 'thinking <antml:in')
@@ -94,6 +119,24 @@ test('completion drain filters reasoning tags split across deltas', async (t) =>
   const chunks = await collect(stream, first)
   assert.equal(chunks.filter((chunk) => chunk.type === 'reasoning-delta').map((chunk) => chunk.text).join(''), 'thinking ')
   assert.equal(chunks.find((chunk) => chunk.type === 'block-end').block.text, 'answer')
+})
+
+test('preserves native message boundaries and joins deltas from the same message', async (t) => {
+  const { adapter } = harness(t, ({ delta, finish }) => {
+    delta('reasoning', '先查', 'first')
+    delta('text', '检查', 'first')
+    delta('text', '仓库。', 'first')
+    delta('reasoning', '再测', 'second')
+    delta('text', '开始测试。\n', 'second')
+    delta('text', '\n测试通过。\n第二行。', 'third')
+    finish()
+  })
+  const { stream, first } = await start(t, adapter)
+  const chunks = await collect(stream, first)
+  const text = '检查仓库。\n\n开始测试。\n\n测试通过。\n第二行。'
+  assert.equal(chunks.filter((chunk) => chunk.type === 'text-delta').map((chunk) => chunk.text).join(''), text)
+  assert.equal(chunks.find((chunk) => chunk.type === 'block-end').block.text, text)
+  assert.equal(chunks.filter((chunk) => chunk.type === 'reasoning-delta').map((chunk) => chunk.text).join(''), '先查\n\n再测')
 })
 
 test('completion drain filters a complete reasoning pseudo-tool block', async (t) => {
