@@ -177,7 +177,7 @@ test('a browser-linked profile selects only its signed-in provider family', asyn
 })
 
 test('a Start Plan child inherits the native data root and excludes host auth overrides', async t => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-launch-'))
+  const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'bridge-launch-'))
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
   const workspace = path.join(dir, 'project')
   fs.mkdirSync(workspace)
