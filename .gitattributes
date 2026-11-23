@@ -1,5 +1,7 @@
 # Release archives contain the DSH integration. Native ZCode marketplace
 # installations use the Git checkout and have a separate release channel.
+client/toolkit.js text eol=lf
+lib/client.js text eol=lf
 keeper export-ignore
 marketplace.json export-ignore
 community/.mcp.json export-ignore
