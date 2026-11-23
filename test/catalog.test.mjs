@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { test } from 'node:test'
 import { setImmediate } from 'node:timers/promises'
 
@@ -24,6 +27,20 @@ function harness(onWrite) {
   })
   return adapter
 }
+
+test('startup rejects when the process exits before or just after the ready notification', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-startup-exit-'))
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
+  const cli = path.join(dir, 'test-cli.cjs')
+  const options = resolveOptions({ cliCwd: dir, zcodeDataBaseDir: dir, zcodeCliNode: process.execPath, zcodeCliPath: cli })
+  const adapter = new ZcodeAppServerAdapter({ options: () => options })
+  t.after(() => adapter.dispose())
+  for (const source of ['process.exit(2)', "console.log(JSON.stringify({ method: 'startup/status', params: { phase: 'ready' } }))"]) {
+    fs.writeFileSync(cli, source)
+    await assert.rejects(adapter.client.ensureStarted(), { code: 'TRANSPORT' })
+    assert.equal(adapter.client.child, undefined)
+  }
+})
 
 test('model discovery closes its probe with an acknowledged protocol request', async () => {
   const frames = []
