@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 // These suites exercise a separately installed official CLI/Desktop kernel.
 // Keep their assertions intact and run them explicitly through test:native.
-const native = new Set(['community-cli.test.mjs', 'community-native.test.mjs', 'force-keeper-native.test.mjs'])
+const native = new Set(['desktop-kernel.test.mjs', 'community-cli.test.mjs', 'community-native.test.mjs', 'force-keeper-native.test.mjs'])
 const directory = new URL('../test/', import.meta.url)
 const files = (await readdir(directory)).filter(name => name.endsWith('.test.mjs') && !native.has(name)).sort()
 if (!files.length) throw new Error('No offline tests were discovered')

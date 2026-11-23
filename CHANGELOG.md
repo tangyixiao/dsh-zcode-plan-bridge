@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0
+
+- Sign in to each independent DSH profile once through ZCode. Existing account order and rotation settings carry forward. ZCode handles authentication in its own process.
+- Select Start Plan models from the catalog supplied by the active ZCode session. The toolkit displays the models on that route.
+- Show completed native task lists, child tasks and message boundaries in the DSH conversation.
+- Locate the Desktop 3.19.1 provider catalog and report early app-server exits promptly.
+
 ## 0.6.8
 
 - Continue the current DSH task by default after confirmed quota exhaustion when independent account rotation is enabled. The bridge waits for native background work to drain and starts a new request with a checkpoint on the next eligible account.

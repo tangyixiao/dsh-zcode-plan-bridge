@@ -70,6 +70,30 @@ test('Retry and permission preferences remain editable without an available mode
   assert.equal(runtime.options().communityRetry.config.maxRetries, 2)
 })
 
+test('Start Plan status shows only advertised routes and clears old plan evidence on refresh failure', async t => {
+  const { runtime, adapter, change } = harness(t)
+  change({ accountMode: 'start-plan' })
+  let state = await runtime.state()
+  assert.deepEqual(state.models, [])
+  assert.equal(state.modelSource, 'not-read')
+  const refresh = () => runtime.action({ action: 'refresh-plan', scope: state.scope, revision: state.settings.revision })
+  adapter.refreshCatalog = async () => [
+    { providerId: 'account:bigmodel-start-plan', modelId: 'eligible' },
+    { providerId: 'zai-api', modelId: 'metered' },
+  ]
+  await refresh()
+  state = await runtime.state()
+  assert.equal(state.plan.source, 'native-catalog')
+  assert.deepEqual(state.plan.models, ['eligible'])
+  assert.deepEqual(state.plan.balances, [])
+  adapter.refreshCatalog = async () => []
+  await refresh()
+  assert.deepEqual((await runtime.state()).plan.models, [])
+  adapter.refreshCatalog = async () => { throw new Error('catalog unavailable') }
+  await assert.rejects(refresh(), /catalog unavailable/)
+  assert.equal((await runtime.state()).plan, undefined)
+})
+
 test('a reused session receives an explicit reasoning change and observations keep missing usage unknown', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] })
   const { adapter, runtime } = harness(t)

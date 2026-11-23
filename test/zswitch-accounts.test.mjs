@@ -25,7 +25,6 @@ async function enable(h, order=['one','two','three']) { const s=await h.manager.
 
 test('automatic continuation is bound to the exact pending independent rotation', async t => {
   const h = harness(t)
-  h.client.snapshot = async id => ({ id })
   const manager = new ZSwitchAccounts({
     client: h.client, adapter: h.adapter, file: h.file, options: () => ({}),
     profiles: { activate: snapshot => ({ managedAccount: { id: snapshot.id } }) },
@@ -152,10 +151,9 @@ for (const evidence of [
   {providerErrorCode:'1113',providerId:'account:zai-start-plan'},
   {providerErrorCode:'1005',providerId:'account:zai-start-plan',providerMessage:'exceed quota limit'},
 ]) {
-test(`independent quota ${evidence.providerErrorCode} rotation reuses snapshots without a global switch`, async t => {
+test(`independent quota ${evidence.providerErrorCode} rotation selects authorized private profiles without a global switch`, async t => {
   const h=harness(t)
   let selected
-  h.client.snapshot=async id=>({id,revision:'library-generation'})
   const profiles={activate:(snapshot,base)=>{selected=snapshot.id;return{...base,zcodeDataBaseDir:`/private/${snapshot.id}`,managedAccount:{id:snapshot.id}}}}
   const manager=new ZSwitchAccounts({client:h.client,adapter:h.adapter,options:()=>({zcodeDataBaseDir:''}),file:h.file,profiles,generation:()=>selected??'desktop'})
   const initial=await manager.state();assert.equal(initial.mode,'independent')
@@ -185,7 +183,6 @@ test('an unknown current account cannot corrupt the persisted rotation document'
 
 test('restart hydration restores private account before catalog or plan reads', async t => {
   const h=harness(t);let chosen
-  h.client.snapshot=async id=>({id})
   const profiles={activate:(snapshot,base)=>{chosen=snapshot.id;return{...base,zcodeDataBaseDir:`/private/${chosen}`,managedAccount:{id:chosen}}}}
   const options=()=>({zcodeDataBaseDir:''})
   const first=new ZSwitchAccounts({client:h.client,adapter:h.adapter,options,file:h.file,profiles})
@@ -198,7 +195,6 @@ test('restart hydration restores private account before catalog or plan reads', 
 
 test('mode transition validates the target scope before enabling rotation',async t=>{
   const h=harness(t)
-  h.client.snapshot=async id=>({id})
   const manager=new ZSwitchAccounts({client:h.client,adapter:h.adapter,file:h.file,options:()=>({}),profiles:{activate:s=>({managedAccount:{id:s.id}})}})
   let state=await manager.state();await manager.action({operation:'select',id:'one',revision:state.revision})
   const source=await h.client.state();h.client.state=async()=>({...source,activeId:null})
@@ -212,4 +208,37 @@ test('native finalization failure always releases the account management reserva
   h.adapter.syncToolkitIdentity=()=>{throw new Error('sync-failed')}
   await assert.rejects(h.manager.action({operation:'policy',mode:'shared',enabled:false,order:[],revision:state.revision}),/sync-failed/)
   assert.equal(h.manager.managing,false)
+})
+
+
+test('managed BigModel Start Plan accepts only its own confirmed quota attribution', async t => {
+  const h = harness(t)
+  const profiles = { activate: member => ({ managedAccount:{id:member.id,provider:'bigmodel'} }) }
+  const manager = new ZSwitchAccounts({client:h.client,adapter:h.adapter,file:h.file,profiles,options:()=>({accountMode:'start-plan'})})
+  await manager.action({operation:'select',id:'one',revision:(await manager.state()).revision})
+  await enable({manager})
+  for (const evidence of [
+    {providerId:'account:zai-start-plan',providerErrorCode:1113},
+    {providerId:'account:bigmodel-start-plan',providerErrorCode:1005,providerMessage:'exceed quota limit'},
+    {providerId:'account:bigmodel-individual-coding-plan',providerErrorCode:1113},
+  ]) {
+    await manager.failed(await manager.prepare(h.request('wrong route')),evidence)
+    assert.equal((await manager.state()).pending,null)
+  }
+  await manager.failed(await manager.prepare(h.request('bound account')),{providerId:'account:bigmodel-start-plan',providerErrorCode:1113})
+  assert.equal((await manager.state()).pending.from,'one')
+})
+
+test('a detached persisted independent selection cannot fall back to the shared login', async t => {
+  const h = harness(t)
+  const profiles = { activate: member => ({managedAccount:{id:member.id}}) }
+  const manager = new ZSwitchAccounts({client:h.client,adapter:h.adapter,file:h.file,profiles,options:()=>({})})
+  await manager.action({operation:'select',id:'two',revision:(await manager.state()).revision})
+  const restored = new ZSwitchAccounts({client:h.client,adapter:h.adapter,file:h.file,options:()=>({zcodeDataBaseDir:'/shared'})})
+  await assert.rejects(restored.hydrate(),/account-login-required/)
+  const opts = restored.effectiveOptions({zcodeDataBaseDir:'/shared',zcodeCliPath:'shared-cli'})
+  assert.equal(opts.managedAccount.id,'two')
+  assert.equal(opts.zcodeCliPath,'')
+  assert.notEqual(opts.zcodeDataBaseDir,'/shared')
+  await assert.rejects(restored.prepare({...h.request('title'),purpose:'session-title'}),/account-login-required/)
 })

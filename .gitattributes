@@ -1,0 +1,28 @@
+# Release archives contain the DSH integration. Native ZCode marketplace
+# installations use the Git checkout and have a separate release channel.
+keeper export-ignore
+marketplace.json export-ignore
+community/.mcp.json export-ignore
+community/.zcode-plugin export-ignore
+community/hooks export-ignore
+community/commands export-ignore
+community/marketplace.json export-ignore
+community/package.json export-ignore
+community/bin/ready.mjs export-ignore
+community/bin/tools.mjs export-ignore
+community/bin/launch-desktop.mjs export-ignore
+community/runtime/desktop.mjs export-ignore
+community/runtime/native-attach.mjs export-ignore
+community/runtime/native-runtime.mjs export-ignore
+community/runtime/owned-inspector.mjs export-ignore
+docs/superpowers export-ignore
+test/community-inspector.test.mjs export-ignore
+test/community-cli.test.mjs export-ignore
+test/community-native-runtime.test.mjs export-ignore
+test/community-native.test.mjs export-ignore
+test/community-plugin.test.mjs export-ignore
+test/community-settings.test.mjs export-ignore
+test/force-keeper-native.test.mjs export-ignore
+test/keeper-attach.test.mjs export-ignore
+test/keeper.test.mjs export-ignore
+test/native-install-arguments.test.mjs export-ignore

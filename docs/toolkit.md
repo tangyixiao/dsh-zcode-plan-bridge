@@ -1,6 +1,6 @@
 # ZCode toolkit / ZCode 工具箱
 
-Source version: **0.6.4**. Package publication, installation, runtime activation and successful generation remain separate evidence. / 源码、发布、安装、实际加载和真实生成分别记录；历史验收保持对应原版本。
+ZCode Plan Bridge 0.7.0
 
 ## 使用
 
@@ -8,7 +8,7 @@ Source version: **0.6.4**. Package publication, installation, runtime activation
 
 工具箱 HTTP 入口先同步调用宿主 `connection.requestRejection(req)`，仅 `undefined` 放行，`401` / `403` 原样拒绝；缺失、异常或无效返回（包括 Promise）均拒绝。检查先于主人身份准入、请求体读取、状态读取和账号/运行时动作。随后仍检查主人身份、任何提供的 Origin、进程控制密钥、方法、JSON 上限及 scope/revision；已通过宿主认证的 Desktop 转发可省略 Origin。宿主合同不满足时工具箱不可用，CLI 与模型提供方继续独立使用。
 
-1. **状态与套餐**：查看版本、运行状态、通道和本地凭证可读性。「刷新 Start Plan 套餐」手动请求现有 balance 接口，只展示实际返回的名称、单位、额度与观察时间。可读凭证不证明远端认证或生成成功；不同单位不合并、不换算费用。
+1. **状态与套餐**：查看版本、运行状态、通道和本地登录文件是否存在。「刷新 Start Plan 模型」通过 ZCode app-server 读取本账号原生会话公布的 Start Plan 模型。额度可在账号卡片中通过 Z·SWITCH 查询。
 2. **模型**：「刷新模型目录」通过原生 app-server 读取目录，不发送生成请求。配置中的 `cliModels` 优先提供展示条目，随后应用隐藏设置；不能把所有当前模型隐藏。上游目录变化导致已显示模型全部消失时，恢复当前列表以便继续选择。
 3. **推理**：仅选择目录实际声明的档位。优先级为单次请求的 `reasoningEffort` → 工具箱为该账号/模型保存的默认值 → CLI 声明默认值。模型别名通过 `cliModelId` 读取能力。复用会话也同步档位；同步失败则结束请求，不能悄悄使用旧档位生成。
 4. **会话与 Retry**：显示活跃、排队/处理中和缓存数量。清理空闲桥接缓存会关闭对应原生会话并清空目录，不删除 DSH 对话。有活跃、排队、初始化或目录探测时拒绝冲突操作。Retry 设置覆盖 schema 中相应字段，恢复按钮移除此覆盖；保存后在下一次请求前重建空闲原生进程，保留取消能力。
@@ -20,13 +20,11 @@ Source version: **0.6.4**. Package publication, installation, runtime activation
 
 设置存放在 `$DSH_HOME/dsh-zcode-plan-bridge/toolkit.json`，未设置 `DSH_HOME` 时使用 `~/.dsh/dsh-zcode-plan-bridge/toolkit.json`。使用原子替换、排他锁和 revision 比较，不写 ZCode 的共享登录文件。工具箱覆盖的 Retry/权限与模型偏好由宿主、适配器和 CLI 读取同一份文件。
 
-隔离键包含数据根目录、套餐通道及本地凭证版本的不可逆摘要。不信任未验证 JWT 中的用户声明；凭证刷新可能建立新的偏好空间。账号或通道变化后，空闲旧子进程和缓存失效；有请求时拒绝新的冲突操作。旧界面的 scope/revision 不能覆盖新状态。文件损坏、锁占用或超出 64 个偏好空间/256 KiB 上限时明确失败，不擅自清空旧设置。
+独立模式的偏好空间按账号和官方登录记录区分，ZCode 刷新登录时保留已有偏好。共同模式使用登录文件元数据识别变化。账号或通道改变后会清理空闲缓存；有活跃请求时拒绝冲突操作。
 
 ## CLI
 
-新版 ZCode 的 `enc:v2:os` 凭证使用客户端已有的系统密钥，桥接只读该安装自带的 keyring 模块与指定密钥条目，并核对密钥指纹和 AES-GCM 认证；不创建、重置、迁移或导出登录。旧 `enc:v1` 与显式 `enc:v2:env` 继续支持。未知加密版本不再当成明文；密钥不可读会明确失败。共享登录已升级时，CLI 内核也必须支持 v2，不能继续使用 3.17.1 内核。
-
-ZCode v2 credentials use the existing client OS key, via its installed keyring and the exact credential-file entry. The bridge validates the key fingerprint and authenticated cipher, performs no key/credential writes, preserves v1 and explicit env-source support, and rejects unknown encryption versions. A migrated login also requires a compatible CLI; an old 3.17.1 kernel is insufficient.
+独立账号在本机通过 ZCode 浏览器授权。工具箱账号卡片显示对应的登录命令。详情见[独立账号设置](zswitch-accounts.md)。
 
 ```sh
 node bin/dsh-zcode-plan-bridge.js status --json --account-mode start-plan
@@ -44,7 +42,7 @@ Open **Extensions → Plugins → ZCode Plan Bridge → Configure**. The additiv
 
 Configured `cliModels` remain authoritative before visibility filtering. Never hide every current model. Explicit request effort takes precedence over the credential/channel/model default and then the CLI default; reused sessions receive changes, and failed model/effort synchronization stops the request before generation. Context/output limits and reasoning levels are never enlarged or invented.
 
-Preferences use the same atomic, revisioned, credential-generation/channel-scoped store for host, adapter and CLI. The default location is `$DSH_HOME/dsh-zcode-plan-bridge/toolkit.json`, otherwise `~/.dsh/dsh-zcode-plan-bridge/toolkit.json`. A token refresh may start a fresh preference bucket. No desktop credentials are rewritten. Corruption, held locks and storage limits fail explicitly. Active or queued work prevents conflicting mutations or cache clearing. A retired account/channel invalidates idle native state.
+Preferences are scoped to the account and plan channel. Independent profiles retain their preferences when ZCode refreshes its own login. A fresh authorization starts a new scope. Storage uses revision checks and atomic replacement under the Bridge directory in DSH_HOME.
 
 The native policy remains `deny` by default; `allow-all` permits unattended tool execution. Granular host approval, check-in, media generation and compaction are outside this candidate. Existing image input is preserved and differs from image generation. The [Z·SWITCH account integration](zswitch-accounts.md) supports independent DSH or shared login and quota-only next-request rotation.
 

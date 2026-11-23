@@ -21,16 +21,16 @@
 Desktop: install the release `.tgz` through Extensions → Plugin Management → Add Plugin. For a Web profile you explicitly control:
 
 ```sh
-dsh plugin --profile web add dsh-zcode-plan-bridge@0.6.8
+dsh plugin --profile web add dsh-zcode-plan-bridge@0.7.0
 ```
 
-Sign in through ZCode CLI, then select the ZCode CLI provider in DSH. Set `accountMode: start-plan` explicitly for that channel; a billing error alone does not mean a top-up is needed.
+Select the ZCode CLI provider in DSH and set `accountMode: start-plan` for Start Plan. When upgrading from 0.6.x, authorize each independent account once through ZCode. The toolkit shows the login command for each account. Your account order and rotation settings carry forward. [Independent account setup](docs/zswitch-accounts.md)
 
 ## Status and compatibility
 
 | Item | Current source of truth |
 | --- | --- |
-| Source version | `0.6.8` · see [package.json](package.json) |
+| Source version | `0.7.0` · see [package.json](package.json) |
 | Distribution | `npm` · [Releases](https://github.com/tangyixiao/dsh-zcode-plan-bridge/releases) |
 | DSH | `>=0.1.5 <0.3.0-0 \|\| ^0.1.5-rc.1 \|\| ^0.1.7-rc.1 \|\| ^0.2.0-rc.1 \|\| ^0.2.1-rc.1 \|\| 0.2.2-rc.1 \|\| 0.2.2-rc.3 \|\| 0.2.2-rc.5` |
 | Node.js | `>=22` |
@@ -42,7 +42,7 @@ A readable catalog, a loaded plugin and successful inference are separate facts.
 
 ## ZCode toolkit and accounts
 
-`0.6.5` provides a bilingual DSH plugin configuration panel: local status and manual Start Plan balance refresh, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
+`0.6.5` provides a bilingual DSH plugin configuration panel: local status and Start Plan model discovery, model visibility and default reasoning, session and Retry controls, recent token/failure observations, and shareable diagnostics. It preserves the `zcode-cli` provider; missing UI or authenticated host services leave CLI and model-provider use intact.
 
 Session title requests ask the model for a summary through a separate disposable native session, which closes when the request settles. They do not return a prompt prefix or reuse the main chat's native session. The original host title plugin still owns its input limit and timeout.
 
@@ -50,7 +50,7 @@ Session title requests ask the model for a summary through a separate disposable
 
 Account controls reuse the Z·SWITCH library. When independent rotation is enabled, a confirmed quota failure waits for native tools to drain and continues the current task on the next eligible account by default. Shared rotation switches on the next new request. See the [account guide](docs/zswitch-accounts.md).
 
-Preferences are isolated by credential generation and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
+Preferences are scoped to the account profile, sign-in state and plan channel. An explicit per-request reasoning effort wins. Active/queued requests block cache clearing and preference mutations. `status`, `capabilities`, and `doctor --share` inspect local state without starting generation; ordinary `doctor` and `models` start app-server catalog discovery and are not fully offline.
 
 [Toolkit guide / 工具箱说明](docs/toolkit.md) · [Acceptance record](docs/toolkit-acceptance.md). Source tests, installation/activation and live inference remain separate evidence. Historical acceptance records describe the versions actually tested.
 

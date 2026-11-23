@@ -19,8 +19,8 @@ const created = {
   }] } },
 }
 
-function harness(onWrite) {
-  const adapter = new ZcodeAppServerAdapter({ options: () => resolveOptions({}) })
+function harness(onWrite, config = {}, managedAccount) {
+  const adapter = new ZcodeAppServerAdapter({ options: () => ({ ...resolveOptions(config), managedAccount }) })
   adapter.client.ensureStarted = async () => {}
   adapter.client.write = (message) => onWrite(message, (result, error) => {
     adapter.client.onData(JSON.stringify({ id: message.id, ...(error ? { error: { message: error } } : { result }) }) + '\n')
@@ -97,4 +97,111 @@ test('a slow discovery can populate the live catalogue after the picker fallback
   const refreshed = await adapter.listModels('zcode-cli')
   assert.equal(refreshed[0].id, 'probe-model')
   assert.equal(starts, 1, 'reuse one in-flight catalogue probe')
+})
+
+function nativeCatalog(refs) {
+  return {
+    session: { sessionId: 'fixture', model: { providerId: 'api', modelId: 'same' } },
+    settings: { model: { available: refs.map(([providerId, modelId]) => ({ ref: { providerId, modelId } })) } },
+  }
+}
+
+for (const plan of ['account:zai-start-plan', 'account:bigmodel-start-plan']) {
+  test(`Start Plan selects the advertised ${plan} route for a duplicated model ID`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const catalog = nativeCatalog([['account:zai-individual-coding-plan', 'same'], ['api', 'api-only'], [plan, 'same']])
+    const frames = []
+    const adapter = harness((message, reply) => {
+      frames.push(message)
+      reply(message.method === 'session/create' ? catalog : {})
+    }, { accountMode: 'start-plan', cliModels: [{ id: 'plan-alias', cliModelId: 'same' }, { id: 'api-only' }] })
+    assert.deepEqual((await adapter.listModels('zcode-cli')).map(entry => entry.id), ['plan-alias'])
+    const pending = adapter.ensureSession('dsh', 'plan-alias')
+    await setImmediate()
+    t.mock.timers.tick(1500)
+    const selected = await pending
+    assert.equal(selected.providerId, plan)
+    assert.equal(selected.modelId, 'same')
+    assert.equal(frames.find(msg => msg.method === 'session/setModel').params.model.providerId, plan)
+    assert.deepEqual(frames.map(frame => frame.method), [
+      'session/create', 'session/close', 'session/create', 'session/subscribe', 'session/setMode', 'session/setModel',
+    ])
+  })
+}
+
+test('a plan missing from the current session cannot use an API route, a stale probe, a pin or a static model', async () => {
+  const plan = nativeCatalog([['account:zai-start-plan', 'same']])
+  const noPlan = nativeCatalog([['api', 'same']])
+  let replyCatalog = plan
+  const frames = []
+  const adapter = harness((message, reply) => {
+    frames.push(message)
+    reply(message.method === 'session/create' ? replyCatalog : {})
+  }, { accountMode: 'start-plan', cliModels: [{ id: 'pinned', cliModelId: 'same' }] })
+  assert.deepEqual((await adapter.listModels('zcode-cli')).map(entry => entry.id), ['pinned'])
+  replyCatalog = noPlan
+  await assert.rejects(adapter.ensureSession('dsh', 'pinned'), /account-model-unavailable/)
+  assert.deepEqual(await adapter.listModels('zcode-cli'), [])
+  await assert.rejects(adapter.resolveRoute('pinned'), /account-model-unavailable/)
+  await assert.rejects(adapter.validateAccountModel('pinned'), /account-model-unavailable/)
+  assert.deepEqual(frames.map(frame => frame.method), ['session/create', 'session/close', 'session/create', 'session/close'])
+  assert.equal(adapter.sessions.size, 0)
+})
+
+test('a Start Plan catalog probe failure propagates without a default route', async () => {
+  const adapter = harness((_message, reply) => reply(undefined, 'offline'), { accountMode: 'start-plan' })
+  await assert.rejects(adapter.listModels('zcode-cli'), /offline/)
+  await assert.rejects(adapter.resolveRoute('missing'), /offline/)
+})
+
+test('two Start Plan providers sharing a model have distinct selectable IDs', async () => {
+  const refs = [['account:zai-start-plan', 'same'], ['account:bigmodel-start-plan', 'same']]
+  const adapter = harness((message, reply) => reply(message.method === 'session/create' ? nativeCatalog(refs) : {}), { accountMode: 'start-plan' })
+  const models = await adapter.listModels('zcode-cli')
+  assert.deepEqual(models.map(entry => entry.id), refs.map(ref => ref.join('/')))
+  for (const [index, entry] of models.entries()) {
+    const route = await adapter.resolveRoute(entry.id)
+    assert.equal(route.providerId, refs[index][0])
+    assert.equal(route.modelId, 'same')
+  }
+  await assert.rejects(adapter.resolveRoute('same'), /account-model-unavailable/)
+})
+
+test('a browser-linked profile selects only its signed-in provider family', async () => {
+  const refs = [['account:zai-start-plan', 'same'], ['account:bigmodel-start-plan', 'same']]
+  const adapter = harness((message, reply) => reply(message.method === 'session/create' ? nativeCatalog(refs) : {}),
+    { accountMode: 'start-plan' }, { id: 'test', provider: 'bigmodel', generation: 'test-generation' })
+  assert.deepEqual((await adapter.listModels('zcode-cli')).map(entry => entry.id), ['same'])
+  assert.equal((await adapter.resolveRoute('same')).providerId, 'account:bigmodel-start-plan')
+  await assert.rejects(adapter.resolveRoute('account:zai-start-plan/same'), /account-model-unavailable/)
+})
+
+test('a Start Plan child inherits the native data root and excludes host auth overrides', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-launch-'))
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
+  const workspace = path.join(dir, 'project')
+  fs.mkdirSync(workspace)
+  const cli = path.join(dir, 'fixture.cjs')
+  const capture = path.join(dir, 'capture.json')
+  const names = ['ZCODE_APP_SERVER_AUTH_MODE', 'ZCODE_TEST_AUTH_HEADER', 'BRIDGE_TEST_API_KEY', 'BRIDGE_TEST_ALLOWED']
+  const before = names.map(key => process.env[key])
+  t.after(() => {
+    names.forEach((key, index) => {
+      if (before[index] === undefined) delete process.env[key]
+      else process.env[key] = before[index]
+    })
+  })
+  for (const key of names) process.env[key] = 'fixture'
+  fs.writeFileSync(cli, `require('node:fs').writeFileSync(${JSON.stringify(capture)}, JSON.stringify({
+    args: process.argv.slice(2), cwd: process.cwd(), root: process.env.ZCODE_DATA_BASE_DIR,
+    present: ${JSON.stringify(names)}.filter(key => key in process.env)
+  }))`)
+  const options = resolveOptions({ accountMode: 'start-plan', cliCwd: workspace, zcodeDataBaseDir: dir, zcodeCliPath: cli,
+    zcodeCliNode: process.execPath, childEnvAllow: names })
+  const adapter = new ZcodeAppServerAdapter({ options: () => options })
+  t.after(() => adapter.dispose())
+  await assert.rejects(adapter.client.ensureStarted(), { code: 'TRANSPORT' })
+  assert.deepEqual(JSON.parse(fs.readFileSync(capture, 'utf8')), {
+    args: ['app-server', '--surface', 'terminal', '--no-color'], cwd: dir, root: dir, present: ['BRIDGE_TEST_ALLOWED'],
+  })
 })
