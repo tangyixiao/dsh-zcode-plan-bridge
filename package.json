@@ -85,7 +85,16 @@
   "files": [
     "lib",
     "bin",
-    "community",
+    "community/bin/agent.cjs",
+    "community/runtime/config.mjs",
+    "community/runtime/model-idle.mjs",
+    "community/runtime/policy.mjs",
+    "community/runtime/probe.mjs",
+    "community/runtime/retry-fetch.mjs",
+    "community/runtime/state.mjs",
+    "community/LICENSE",
+    "community/README.md",
+    "community/assets",
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",
@@ -98,8 +107,7 @@
     "CONTRIBUTING.md",
     "SUPPORT.md",
     "SECURITY.md",
-    "AGENTS.md",
-    "keeper"
+    "AGENTS.md"
   ],
   "icon": "./assets/logo.webp"
 }
