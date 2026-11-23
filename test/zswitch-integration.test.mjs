@@ -163,7 +163,7 @@ test('a migrated selection serves ordinary and title turns before and after a na
   const profiles = new ZSwitchProfiles({
     root: path.join(dir, 'profiles'), cli: () => path.join(dir, 'fixture.cjs'),
     run: async (_cli, _node, provider, env) => {
-      const member = accounts.find(row => profiles.directory(row.id) === env.ZCODE_DATA_BASE_DIR)
+      const member = accounts.find(row => env.ZCODE_DATA_BASE_DIR.startsWith(profiles.directory(row.id) + path.sep))
       fs.writeFileSync(env.ZCODE_CREDENTIALS_FILE, 'opaque fixture')
       return { status: 'ready', provider, credentialsPath: env.ZCODE_CREDENTIALS_FILE, user: { user_id: member.id } }
     },
