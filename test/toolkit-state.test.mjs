@@ -5,7 +5,6 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ToolkitSettingsStore, accountScope, ObservationLog, classifyFailure } from '../lib/toolkit-state.js'
 import { localStatus, shareableStatus } from '../lib/toolkit-diagnostics.js'
-import { sanitizePlanBalance } from '../lib/start-plan.js'
 
 const scratch = fileURLToPath(new URL('../../work/zcode-toolkit-20261114/', import.meta.url))
 function fixture(t) {
@@ -29,15 +28,31 @@ test('settings are revisioned, closed, durable and isolated per scope', t => {
   fs.writeFileSync(store.file + '.lock', '')
   assert.throws(() => store.update(scope, next.revision, {}), /storage-busy/)
 })
-test('credential generations and channel changes receive different opaque scopes', t => {
+test('local status and scope use only native login file metadata and channel', t => {
   const dir = fixture(t); fs.mkdirSync(path.join(dir, '.zcode/v2'), { recursive: true })
   const file = path.join(dir, '.zcode/v2/credentials.json')
-  fs.writeFileSync(file, JSON.stringify({ zcodejwttoken: 'private-A', 'oauth:active_provider': 'zai' }))
+  fs.writeFileSync(file, 'unreadable-as-JSON')
+  const read = fs.readFileSync
+  t.mock.method(fs, 'readFileSync', function (target, ...args) {
+    assert.notEqual(target, file, 'status and account scoping must not open a native login file')
+    return read.call(fs, target, ...args)
+  })
+  const open = fs.openSync
+  t.mock.method(fs, 'openSync', function (target, ...args) {
+    assert.notEqual(target, file, 'status and account scoping must not open a native login file')
+    return open.call(fs, target, ...args)
+  })
   const options = { zcodeDataBaseDir: dir, accountMode: 'standalone' }
   const a = accountScope(options)
   assert.match(a, /^[a-f0-9]{64}$/)
   assert.notEqual(a, accountScope({ ...options, accountMode: 'start-plan' }))
-  fs.writeFileSync(file, JSON.stringify({ zcodejwttoken: 'private-B', 'oauth:active_provider': 'zai' }))
+  assert.equal(localStatus(options).credentials, 'present')
+  assert.equal(shareableStatus(localStatus(options)).credentials, 'present')
+  const managed = { ...options, managedAccount: { id: 'one', generation: 'first-login' } }
+  const signedIn = accountScope(managed)
+  fs.utimesSync(file, new Date(10000), new Date(10000))
+  assert.equal(accountScope(managed), signedIn)
+  assert.notEqual(accountScope({ ...managed, managedAccount: { id: 'one', generation: 'second-login' } }), signedIn)
   assert.notEqual(a, accountScope(options))
 })
 test('bounded observations keep unknown and observed zero distinct and drop private fields', () => {
@@ -67,13 +82,4 @@ test('shareable reports are allowlisted and never start a CLI or leak local iden
   assert.equal(report.inference, 'not-tested')
   assert.equal(report.accountMode, 'start-plan')
   assert.doesNotMatch(JSON.stringify(report), /secret-token|private-cli|state-|arbitrary|scope/)
-})
-test('plan projection keeps authoritative units and strips identifiers and unknown fields', () => {
-  const payload = JSON.parse(fs.readFileSync(new URL('./fixtures/start-plan-balance-3.17.1.json', import.meta.url)))
-  const projected = sanitizePlanBalance(payload, 1234)
-  assert.equal(projected.observedAt, 1234)
-  assert.equal(projected.balances[0].remainingUnits, 1)
-  assert.equal(projected.balances[0].unitType, 'tokens')
-  assert.doesNotMatch(JSON.stringify(projected), /user-plan|plan-redacted|bucket_id|entitlement_id/)
-  assert.equal(sanitizePlanBalance({ data: { balances: [{ remaining_units: -1 }] } }, 1).balances[0].remainingUnits, undefined)
 })

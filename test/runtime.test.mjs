@@ -2,7 +2,7 @@
  * Unit tests for the pure helpers behind the bridge.
  *
  * Scope: the parts that encode decisions and can be wrong silently -- catalogue
- * normalisation, provider collapsing, route selection, credential decryption, history
+ * normalisation, provider collapsing, route selection, history
  * flattening, leak suppression. Nothing here spawns the ZCode CLI (that costs quota and
  * needs a signed-in account); the wire protocol is covered by `dsh-zcode-plan-bridge
  * protocol`, which is meant to be run by hand after a CLI upgrade.
@@ -11,7 +11,6 @@
  */
 
 import assert from 'node:assert/strict'
-import { createCipheriv, createHash, randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -29,7 +28,6 @@ import {
   selectBestCli,
   selectLaunchableCli,
 } from '../lib/zcode-runtime.js'
-import { deriveKey, decryptValue, readZaiPlanAuth } from '../lib/credentials.js'
 import { flattenConversation, lastUserText, sanitizeLeakedCalls } from '../lib/messages.js'
 
 /** One `settings.model.available` entry, as the CLI reports it. */
@@ -184,41 +182,6 @@ test('pickCatalogEntry with an empty model returns the preferred route', () => {
   ].filter(Boolean)
   assert.equal(pickCatalogEntry(catalog, '')?.providerId, 'account:zai-individual-coding-plan')
   assert.equal(pickCatalogEntry([], ''), undefined)
-})
-
-test('decryptValue round-trips an enc:v1 payload', () => {
-  // Rebuild the CLI's own envelope so the test pins the wire format rather than
-  // trusting decryptValue to agree with itself.
-  const secret = 'unit-test-secret'
-  const key = deriveKey(secret)
-  const iv = randomBytes(12)
-  const cipher = createCipheriv('aes-256-gcm', key, iv)
-  const body = Buffer.concat([cipher.update('plan-token-value', 'utf8'), cipher.final()])
-  const token = `enc:v1:${iv.toString('base64url')}.${cipher.getAuthTag().toString('base64url')}.${body.toString('base64url')}`
-  assert.equal(decryptValue(token, key), 'plan-token-value')
-})
-
-test('decryptValue passes plaintext through and rejects broken envelopes', () => {
-  const key = deriveKey('k')
-  assert.equal(decryptValue('plain-value', key), 'plain-value')
-  // Assert on the machine-readable code: the human message is Chinese and may be reworded.
-  assert.throws(() => decryptValue('enc:v1:only-two', key), { code: 'CIPHER_FORMAT' })
-  // 8 base64url chars decode to 6 bytes, not the 12-byte IV the CLI uses.
-  assert.throws(() => decryptValue(`enc:v1:${'A'.repeat(8)}.${'B'.repeat(22)}.${'C'.repeat(8)}`, key), {
-    code: 'CIPHER_IV',
-  })
-  // Well-formed envelope, wrong key: GCM authentication must fail.
-  assert.throws(() => decryptValue(`enc:v1:${'A'.repeat(16)}.${'B'.repeat(22)}.${'C'.repeat(8)}`, key), {
-    code: 'CIPHER_DECRYPT',
-  })
-})
-
-test('readZaiPlanAuth prefers the plan token and falls back to the oauth one', () => {
-  const key = createHash('sha256').update('x').digest()
-  assert.equal(typeof key, 'object')
-  // The real reader takes a directory, so only the key derivation is exercised here; the
-  // preference order is covered by the CLI reporting a 255-char JWT in `doctor`.
-  assert.equal(typeof readZaiPlanAuth, 'function')
 })
 
 test('sanitizeLeakedCalls replaces leaked tool-call markup with an instruction', () => {
