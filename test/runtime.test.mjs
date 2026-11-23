@@ -20,6 +20,7 @@ import { test } from 'node:test'
 import {
   collapseCatalog,
   compareVersions,
+  desktopStandaloneCatalog,
   normalizeCatalogEntry,
   pickCatalogEntry,
   readCurrentModel,
@@ -101,6 +102,23 @@ test('automatic discovery skips an incomplete desktop bundle when a complete CLI
   assert.equal(selectLaunchableCli([desktop, npm], version, p => p === npm), npm)
   assert.equal(selectLaunchableCli([desktop], version, () => false), desktop)
   assert.equal(selectLaunchableCli([desktop, npm], version, () => true), desktop)
+})
+
+test('standalone Desktop uses its packaged catalog only when no CLI-local catalog exists', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-desktop-catalog-'))
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }))
+  const resources = path.join(root, 'resources')
+  const cli = path.join(resources, 'glm', 'zcode.cjs')
+  const catalog = path.join(resources, 'config', 'provider', 'zcode-builtin.json')
+  const adjacent = path.join(path.dirname(cli), 'provider', 'zcode-builtin.json')
+  assert.equal(desktopStandaloneCatalog(cli), undefined)
+  fs.mkdirSync(path.dirname(catalog), { recursive: true })
+  fs.writeFileSync(catalog, '{}')
+  assert.equal(desktopStandaloneCatalog(cli), catalog)
+  assert.equal(desktopStandaloneCatalog(path.join(resources, 'other', 'zcode.cjs')), undefined)
+  fs.mkdirSync(path.dirname(adjacent), { recursive: true })
+  fs.writeFileSync(adjacent, '{}')
+  assert.equal(desktopStandaloneCatalog(cli), undefined)
 })
 
 test('normalizeCatalogEntry treats absent image support as unsupported', () => {
