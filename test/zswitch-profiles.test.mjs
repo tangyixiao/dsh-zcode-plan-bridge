@@ -3,6 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { execFileSync } from 'node:child_process'
 import { ZSwitchProfiles, isolatedCli, profileEnvironment } from '../lib/zswitch-profiles.js'
 import { ZSwitchClient } from '../lib/zswitch.js'
 
@@ -53,6 +54,12 @@ test('official browser entry runs under a private home and verifies identity bef
   fs.linkSync(env.ZCODE_CREDENTIAL_SECRET_FILE,linked)
   assert.throws(()=>profiles.activate(account,{}),/account-profile-boundary/)
   fs.unlinkSync(linked)
+  if (process.platform === 'win32') {
+    const icacls = path.join(process.env.SystemRoot,'System32','icacls.exe')
+    execFileSync(icacls,[env.ZCODE_CREDENTIAL_SECRET_FILE,'/grant','*S-1-1-0:(R)'],{stdio:'ignore'})
+    assert.throws(()=>profileEnvironment(options.managedAccount.env),error =>
+      error.code === 'account-profile-permissions' && error.message.includes('unexpected allow rule'))
+  }
   fs.unlinkSync(env.ZCODE_CREDENTIALS_FILE)
   assert.throws(()=>profiles.activate(account,{}),/account-login-required/)
 })
